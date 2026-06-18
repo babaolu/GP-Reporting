@@ -1,0 +1,434 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { apiGet, apiPost } from '../../lib/api';
+import ReportTimeline from '../../components/timeline/ReportTimeline';
+import { 
+  ArrowLeft, 
+  Snowflake, 
+  CheckCircle, 
+  AlertTriangle, 
+  UserMinus, 
+  BrainCircuit, 
+  Trash2,
+  Loader2,
+  TrendingUp,
+  X
+} from 'lucide-react';
+
+interface UnitDetailsData {
+  id: string;
+  name: string;
+  description: string | null;
+  status: 'active' | 'frozen' | 'deactivated';
+  created_at: string;
+  unitHead: {
+    id: string;
+    full_name: string | null;
+    email: string;
+    phone_number: string | null;
+    telegram_linked: boolean;
+    account_status: string;
+  } | null;
+}
+
+export const UnitDetail: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  const [unit, setUnit] = useState<UnitDetailsData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Modal controls
+  const [showChangeHead, setShowChangeHead] = useState(false);
+  const [newHeadEmail, setNewHeadEmail] = useState('');
+  const [isUpdatingHead, setIsUpdatingHead] = useState(false);
+
+  const [showDeactivate, setShowDeactivate] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
+
+  // Trend analysis states
+  const [trendData, setTrendData] = useState<any | null>(null);
+  const [loadingTrend, setLoadingTrend] = useState(false);
+  const [trendError, setTrendError] = useState<string | null>(null);
+
+  const fetchUnitDetails = async () => {
+    if (!id) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await apiGet<UnitDetailsData>(`/units/${id}`);
+      setUnit(data);
+    } catch (err: any) {
+      console.error('Failed to load unit details:', err);
+      setError(err.message || 'Failed to load department details.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUnitDetails();
+  }, [id]);
+
+  const handleChangeUnitHead = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newHeadEmail || !id) return;
+
+    setIsUpdatingHead(true);
+    try {
+      await apiPost(`/units/${id}/change-head`, { newEmail: newHeadEmail });
+      setNewHeadEmail('');
+      setShowChangeHead(false);
+      await fetchUnitDetails();
+      setTrendData(null); // Clear trend data as unit head changed
+    } catch (err: any) {
+      alert(err.message || 'Failed to change unit head.');
+    } finally {
+      setIsUpdatingHead(false);
+    }
+  };
+
+  const handleDeactivateUnit = async () => {
+    if (!id) return;
+    setIsDeactivating(true);
+    try {
+      await apiPost(`/units/${id}/deactivate`);
+      setShowDeactivate(false);
+      await fetchUnitDetails();
+    } catch (err: any) {
+      alert(err.message || 'Failed to deactivate unit.');
+    } finally {
+      setIsDeactivating(false);
+    }
+  };
+
+  const handleLoadTrendAnalysis = async () => {
+    if (!id) return;
+    setLoadingTrend(true);
+    setTrendError(null);
+    try {
+      const data = await apiPost<any>('/ai/trend', { unitId: id });
+      setTrendData(data);
+    } catch (err: any) {
+      console.error('Trend analysis failed:', err);
+      setTrendError(err.message || 'No reports with completed AI analysis found to analyze trends.');
+    } finally {
+      setLoadingTrend(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-page-bg">
+        <Loader2 className="h-10 w-10 text-primary animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !unit) {
+    return (
+      <div className="space-y-6">
+        <button onClick={() => navigate('/admin/units')} className="flex items-center text-sm text-gray-500 hover:text-primary transition-colors">
+          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Departments
+        </button>
+        <div className="bg-red-50 border border-red-200 p-6 rounded-2xl text-center text-red-700">
+          {error || 'Unit details could not be found.'}
+        </div>
+      </div>
+    );
+  }
+
+  const statusConfigs = {
+    active: { text: 'Active', bg: 'bg-green-50 text-green-700 border-green-200', icon: CheckCircle },
+    frozen: { text: 'Frozen', bg: 'bg-gray-100 text-gray-600 border-gray-200', icon: Snowflake },
+    deactivated: { text: 'Deactivated', bg: 'bg-red-50 text-red-700 border-red-200', icon: AlertTriangle }
+  };
+
+  const currentStatus = statusConfigs[unit.status];
+  const StatusIcon = currentStatus.icon;
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      {/* Header Navigation */}
+      <div className="flex flex-col space-y-4">
+        <button
+          onClick={() => navigate('/admin/units')}
+          className="flex items-center text-sm font-semibold text-gray-500 hover:text-primary transition-colors cursor-pointer w-fit"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Departments
+        </button>
+
+        <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
+          <div>
+            <div className="flex items-center space-x-3">
+              <h1 className="text-3xl font-bold font-display text-primary-text">{unit.name}</h1>
+              <span className={`text-xxs font-bold px-2 py-0.5 rounded-full border flex items-center space-x-1 uppercase ${currentStatus.bg}`}>
+                <StatusIcon className="h-3 w-3 mr-0.5" /> {currentStatus.text}
+              </span>
+            </div>
+            <p className="text-sm text-gray-500 mt-2 font-sans max-w-xl leading-relaxed">
+              {unit.description || 'No department description provided.'}
+            </p>
+          </div>
+
+          <div className="flex space-x-3 shrink-0">
+            <button
+              onClick={() => setShowChangeHead(true)}
+              className="px-4 py-2.5 bg-indigo-50 border border-indigo-200 text-primary hover:bg-indigo-100 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center"
+            >
+              <UserMinus className="h-4 w-4 mr-1.5" /> Change Unit Head
+            </button>
+            {unit.status !== 'deactivated' && (
+              <button
+                onClick={() => setShowDeactivate(true)}
+                className="px-4 py-2.5 bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center"
+              >
+                <Trash2 className="h-4 w-4 mr-1.5" /> Deactivate Unit
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Unit Coordinator Card & Trend Analysis (Left column) */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Coordinator Card */}
+          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2">Unit Coordinator</h3>
+            
+            {unit.unitHead ? (
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <div className="h-10 w-10 bg-indigo-50 border border-indigo-100 rounded-full flex items-center justify-center font-bold text-primary text-sm">
+                    {unit.unitHead.full_name?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-primary-text">{unit.unitHead.full_name || 'Awaiting Profile Setup'}</h4>
+                    <span className="text-xxs text-gray-400">Account status: {unit.unitHead.account_status}</span>
+                  </div>
+                </div>
+
+                <div className="text-xs text-gray-600 space-y-1.5 pt-2 font-sans">
+                  <div><strong>Email:</strong> {unit.unitHead.email}</div>
+                  <div><strong>Phone:</strong> {unit.unitHead.phone_number || 'Not Provided'}</div>
+                  <div className="flex items-center mt-1">
+                    <strong className="mr-1.5">Telegram Bot:</strong>
+                    {unit.unitHead.telegram_linked ? (
+                      <span className="text-xxs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-200">Linked</span>
+                    ) : (
+                      <span className="text-xxs font-bold text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-200">Not Linked</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-6 text-xs text-gray-400 space-y-2">
+                <AlertTriangle className="h-6 w-6 text-amber-500 mx-auto" />
+                <p>No Unit Head currently assigned to this unit.</p>
+              </div>
+            )}
+          </div>
+
+          {/* AI Trend Analysis Card */}
+          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-gray-50 pb-2">
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">
+                <TrendingUp className="h-4 w-4 mr-1.5 text-primary" /> AI Trend Analysis
+              </h3>
+            </div>
+
+            {!trendData ? (
+              <div className="text-center py-6 space-y-4">
+                <p className="text-xs text-gray-500 leading-relaxed font-sans">
+                  Generate chronological department tracking reports spanning the last 6 months.
+                </p>
+                {trendError && (
+                  <div className="text-xxs text-red-600 bg-red-50 border border-red-200 rounded-lg p-2.5">
+                    {trendError}
+                  </div>
+                )}
+                <button
+                  onClick={handleLoadTrendAnalysis}
+                  disabled={loadingTrend}
+                  className="w-full py-2.5 bg-primary text-white hover:bg-indigo-800 disabled:opacity-50 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center"
+                >
+                  {loadingTrend ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+                  ) : (
+                    <BrainCircuit className="h-4 w-4 mr-1.5 text-accent" />
+                  )}
+                  View Trend Analysis
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4 animate-fade-in">
+                {/* Momentum Badge */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-gray-400">Momentum Indicator:</span>
+                  <span className={`text-xxs font-bold uppercase px-2.5 py-0.5 rounded-full border ${
+                    trendData.momentum === 'positive' 
+                      ? 'bg-green-50 text-green-700 border-green-200' 
+                      : trendData.momentum === 'concerning'
+                      ? 'bg-red-50 text-red-700 border-red-200'
+                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                  }`}>
+                    {trendData.momentum}
+                  </span>
+                </div>
+
+                {/* Narrative */}
+                <div className="space-y-1">
+                  <span className="text-xxs font-bold text-gray-400 uppercase tracking-wider block">Performance Trajectory</span>
+                  <p className="text-xs text-primary-text font-sans leading-relaxed text-justify">
+                    {trendData.trend_narrative}
+                  </p>
+                </div>
+
+                {/* Persisting Issues */}
+                {trendData.persisting_issues?.length > 0 && (
+                  <div className="space-y-1.5 pt-2 border-t border-gray-50">
+                    <span className="text-xxs font-bold text-red-600 uppercase tracking-wider block">Persisting Issues</span>
+                    <ul className="text-xs text-primary-text font-sans list-disc pl-4 space-y-1">
+                      {trendData.persisting_issues.map((issue: string, i: number) => (
+                        <li key={i}>{issue}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Resolved Issues */}
+                {trendData.resolved_issues?.length > 0 && (
+                  <div className="space-y-1.5 pt-2 border-t border-gray-50">
+                    <span className="text-xxs font-bold text-green-600 uppercase tracking-wider block">Resolved Issues</span>
+                    <ul className="text-xs text-primary-text font-sans list-disc pl-4 space-y-1">
+                      {trendData.resolved_issues.map((issue: string, i: number) => (
+                        <li key={i}>{issue}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setTrendData(null)}
+                  className="w-full text-center text-xxs font-semibold text-gray-400 hover:text-primary transition-colors underline pt-2 block"
+                >
+                  Reset Analysis Panel
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Timeline Reports (Right columns) */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm">
+            <h3 className="text-xl font-bold font-display text-primary-text mb-6 border-b border-gray-50 pb-2">Department Timeline</h3>
+            <ReportTimeline unitId={unit.id} />
+          </div>
+        </div>
+      </div>
+
+      {/* CHANGE UNIT HEAD MODAL */}
+      {showChangeHead && (
+        <div className="fixed inset-0 overflow-hidden z-50 animate-fade-in">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" onClick={() => setShowChangeHead(false)} />
+          <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-md bg-white flex flex-col h-full shadow-2xl border-l border-gray-100 animate-slide-in">
+              <div className="bg-indigo-950 p-6 text-white flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold font-display leading-tight">Change Coordinator</h3>
+                  <p className="text-xs text-indigo-300 mt-1 font-sans">Replace the department's unit head.</p>
+                </div>
+                <button onClick={() => setShowChangeHead(false)} className="text-indigo-200 hover:text-white p-2 rounded-full hover:bg-indigo-900/50 transition-all cursor-pointer">
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleChangeUnitHead} className="flex-1 p-6 space-y-6 overflow-y-auto">
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-start space-x-2 text-xs text-amber-800 leading-relaxed">
+                  <AlertTriangle className="h-5 w-5 shrink-0 text-warning-custom mt-0.5" />
+                  <p>
+                    <strong>Warning:</strong> This will permanently delete the previous coordinator's account. All unit history, submitted reports, AI summaries, and comment feeds are preserved. The unit will be <strong>frozen</strong> until the new head completes onboarding.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-primary-text mb-1">New Unit Head Email</label>
+                  <input
+                    type="email"
+                    required
+                    value={newHeadEmail}
+                    onChange={(e) => setNewHeadEmail(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="newleader@graceplace.org"
+                  />
+                  <p className="text-xxs text-gray-400 mt-1.5 leading-relaxed">
+                    This registers a new Supabase Auth user with a temporary password and sends a welcome onboarding email.
+                  </p>
+                </div>
+
+                <div className="border-t border-gray-100 pt-6 flex space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowChangeHead(false)}
+                    className="flex-1 py-2.5 border border-gray-300 text-gray-500 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isUpdatingHead || !newHeadEmail}
+                    className="flex-1 py-2.5 bg-primary text-white font-semibold rounded-xl hover:bg-indigo-800 transition-colors text-sm flex items-center justify-center cursor-pointer"
+                  >
+                    {isUpdatingHead && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
+                    Confirm Change
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DEACTIVATE UNIT CONFIRMATION MODAL */}
+      {showDeactivate && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" onClick={() => setShowDeactivate(false)} />
+          <div className="bg-white max-w-sm w-full p-6 rounded-3xl shadow-2xl border border-gray-100 relative z-10 animate-scale-in text-center space-y-4">
+            <div className="bg-red-50 text-danger-custom p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto border border-red-100">
+              <AlertTriangle className="h-8 w-8" />
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold font-display text-primary-text">Deactivate Department?</h3>
+              <p className="text-xs text-gray-500 font-sans leading-relaxed">
+                This will set <strong>{unit.name}</strong> to Deactivated status and suspend the unit head account. They will be immediately blocked from accessing the platform.
+              </p>
+            </div>
+
+            <div className="flex space-x-3 pt-2">
+              <button
+                onClick={() => setShowDeactivate(false)}
+                className="flex-1 py-2.5 border border-gray-300 text-gray-500 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeactivateUnit}
+                disabled={isDeactivating}
+                className="flex-1 py-2.5 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors text-sm flex items-center justify-center cursor-pointer"
+              >
+                {isDeactivating && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
+                Deactivate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+};
+export default UnitDetail;
