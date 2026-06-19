@@ -134,10 +134,26 @@ returns public.profiles as $$
   select * from public.profiles where id = auth.uid();
 $$ language sql security definer;
 
+create or replace function public.is_admin()
+returns boolean as $$
+  select exists (
+    select 1 from public.profiles 
+    where id = auth.uid() and role = 'admin'
+  );
+$$ language sql security definer;
+
+create or replace function public.is_unit_head()
+returns boolean as $$
+  select exists (
+    select 1 from public.profiles 
+    where id = auth.uid() and role = 'unit_head'
+  );
+$$ language sql security definer;
+
 -- --- UNITS POLICIES ---
 create policy "Admins have full access to units" 
   on public.units for all 
-  using (exists (select 1 from public.profiles where id = auth.uid() and role = 'admin'));
+  using (public.is_admin());
 
 create policy "Unit heads can read their own unit" 
   on public.units for select 
@@ -150,26 +166,25 @@ create policy "Users can read their own profile"
 
 create policy "Admins can view and edit all profiles"
   on public.profiles for all
-  using (exists (select 1 from public.profiles where id = auth.uid() and role = 'admin'));
+  using (public.is_admin());
 
 -- --- REPORT DEADLINES POLICIES ---
 create policy "Admins have full access to report deadlines"
   on public.report_deadlines for all
-  using (exists (select 1 from public.profiles where id = auth.uid() and role = 'admin'));
+  using (public.is_admin());
 
 create policy "Unit heads can read report deadlines"
   on public.report_deadlines for select
-  using (exists (select 1 from public.profiles where id = auth.uid() and role = 'unit_head'));
+  using (public.is_unit_head());
 
 -- --- REPORTS POLICIES ---
 create policy "Admins can view all reports"
   on public.reports for select
-  using (exists (select 1 from public.profiles where id = auth.uid() and role = 'admin'));
+  using (public.is_admin());
 
--- Admins can update reports (e.g. update AI status or AI summary via admin APIs, although usually done via service role)
 create policy "Admins can update reports"
   on public.reports for update
-  using (exists (select 1 from public.profiles where id = auth.uid() and role = 'admin'));
+  using (public.is_admin());
 
 create policy "Unit heads can view their own unit's reports"
   on public.reports for select
@@ -192,7 +207,7 @@ create policy "Unit heads can update their own unit's reports"
 -- --- REPORT COMMENTS POLICIES ---
 create policy "Admins can view and manage all comments"
   on public.report_comments for all
-  using (exists (select 1 from public.profiles where id = auth.uid() and role = 'admin'));
+  using (public.is_admin());
 
 create policy "Unit heads can view comments on their own reports"
   on public.report_comments for select
@@ -207,9 +222,9 @@ create policy "Unit heads can view comments on their own reports"
 -- --- MONTHLY SUMMARIES POLICIES ---
 create policy "Admins have full access to monthly summaries"
   on public.monthly_summaries for all
-  using (exists (select 1 from public.profiles where id = auth.uid() and role = 'admin'));
+  using (public.is_admin());
 
 -- --- NOTIFICATION LOG POLICIES ---
 create policy "Admins can view notification logs"
   on public.notification_log for select
-  using (exists (select 1 from public.profiles where id = auth.uid() and role = 'admin'));
+  using (public.is_admin());
