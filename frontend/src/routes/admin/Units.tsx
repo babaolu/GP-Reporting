@@ -8,6 +8,7 @@ import {
   Search, 
   Layers, 
   User, 
+  CheckCircle2,
   Snowflake, 
   X, 
   Loader2, 
@@ -40,6 +41,13 @@ export const Units: React.FC = () => {
   const [unitHeadEmail, setUnitHeadEmail] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
+  const [successData, setSuccessData] = useState<{ name: string; email: string; tempPassword?: string } | null>(null);
+
+  const handleCloseModal = () => {
+    setIsOpen(false);
+    setSuccessData(null);
+    setModalError(null);
+  };
 
   const loadUnits = async () => {
     setIsLoading(true);
@@ -119,17 +127,22 @@ export const Units: React.FC = () => {
     setIsCreating(true);
 
     try {
-      await apiPost('/units', {
+      const res = await apiPost<any>('/units', {
         name,
         description,
         unitHeadEmail
+      });
+
+      setSuccessData({
+        name,
+        email: unitHeadEmail,
+        tempPassword: res.tempPassword
       });
 
       // Reset form states & reload
       setName('');
       setDescription('');
       setUnitHeadEmail('');
-      setIsOpen(false);
       await loadUnits();
     } catch (err: any) {
       setModalError(err.message || 'Failed to create unit.');
@@ -271,91 +284,153 @@ export const Units: React.FC = () => {
         </div>
       )}
 
-      {/* CREATE UNIT MODAL */}
       {isOpen && (
         <div className="fixed inset-0 overflow-hidden z-50 animate-fade-in">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" onClick={() => setIsOpen(false)} />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" onClick={handleCloseModal} />
           
           <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
             <div className="w-screen max-w-md bg-white flex flex-col h-full shadow-2xl border-l border-gray-100 animate-slide-in">
               <div className="bg-indigo-950 p-6 text-white flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-bold font-display leading-tight">Create Department</h3>
+                  <h3 className="text-xl font-bold font-display leading-tight">
+                    {successData ? 'Credentials Provisioned' : 'Create Department'}
+                  </h3>
                   <p className="text-xs text-indigo-300 mt-1 font-sans">
-                    Setup a new church unit and provision credentials.
+                    {successData ? 'Copy the temporary credentials below.' : 'Setup a new church unit and provision credentials.'}
                   </p>
                 </div>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleCloseModal}
                   className="text-indigo-200 hover:text-white p-2 rounded-full hover:bg-indigo-900/50 transition-all cursor-pointer"
                 >
                   <X className="h-6 w-6" />
                 </button>
               </div>
 
-              <form onSubmit={handleCreateUnit} className="flex-1 p-6 space-y-6 overflow-y-auto">
-                {modalError && (
-                  <div className="bg-red-50 border border-red-200 p-4 rounded-xl flex items-start space-x-2.5 text-xs text-red-700">
-                    <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 mt-0.5" />
-                    <span>{modalError}</span>
+              {successData ? (
+                <div className="flex-1 p-6 space-y-6 overflow-y-auto flex flex-col justify-between">
+                  <div className="space-y-6">
+                    <div className="bg-green-50 border border-green-200 p-4 rounded-xl flex items-start space-x-3 text-xs text-green-700">
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600 mt-0.5" />
+                      <div>
+                        <strong className="block text-green-800 font-semibold mb-0.5">Creation Success!</strong>
+                        Department unit has been created and an authentication account was successfully provisioned.
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 space-y-4 font-sans text-xs">
+                      <div>
+                        <span className="text-gray-400 font-semibold block uppercase tracking-wider mb-1">Department</span>
+                        <strong className="text-primary-text text-sm">{successData.name}</strong>
+                      </div>
+                      
+                      <div>
+                        <span className="text-gray-400 font-semibold block uppercase tracking-wider mb-1">Username / Email</span>
+                        <strong className="text-primary-text text-sm">{successData.email}</strong>
+                      </div>
+
+                      <div>
+                        <span className="text-gray-400 font-semibold block uppercase tracking-wider mb-1">Temporary Password</span>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <code className="bg-indigo-50 border border-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg font-mono text-sm font-bold flex-1 select-all">
+                            {successData.tempPassword}
+                          </code>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (successData.tempPassword) {
+                                navigator.clipboard.writeText(successData.tempPassword);
+                                alert('Temporary password copied to clipboard!');
+                              }
+                            }}
+                            className="bg-white hover:bg-gray-50 border border-gray-200 p-2 rounded-lg text-gray-500 hover:text-primary transition-colors cursor-pointer"
+                            title="Copy Password"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" className="h-4 w-4">
+                              <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-xxs text-gray-400 leading-normal">
+                      Note: A welcome email containing these credentials was sent to the coordinator. The password must be reset upon their first login.
+                    </p>
                   </div>
-                )}
 
-                <div>
-                  <label className="block text-sm font-semibold text-primary-text mb-1">Department Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="E.g., Choir, Ushers, Youth"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-primary-text mb-1">Description</label>
-                  <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary h-24"
-                    placeholder="Provide a brief description of the department's mandate..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-primary-text mb-1">Unit Head Email</label>
-                  <input
-                    type="email"
-                    required
-                    value={unitHeadEmail}
-                    onChange={(e) => setUnitHeadEmail(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="leader@graceplace.org"
-                  />
-                  <p className="text-xxs text-gray-400 mt-1.5 font-sans leading-relaxed">
-                    <strong>Note:</strong> Generating this department will atomically create a Supabase Auth user account with a temporary password and dispatch a welcome credentials email.
-                  </p>
-                </div>
-
-                <div className="border-t border-gray-100 pt-6 flex space-x-4">
                   <button
-                    type="button"
-                    onClick={() => setIsOpen(false)}
-                    className="flex-1 py-2.5 border border-gray-300 text-gray-500 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm cursor-pointer"
+                    onClick={handleCloseModal}
+                    className="w-full py-3 bg-primary hover:bg-indigo-800 text-white font-semibold rounded-xl text-sm transition-all shadow-md cursor-pointer mt-8"
                   >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isCreating}
-                    className="flex-1 py-2.5 bg-primary text-white font-semibold rounded-xl hover:bg-indigo-800 transition-colors text-sm flex items-center justify-center cursor-pointer"
-                  >
-                    {isCreating && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
-                    Create Department
+                    Done
                   </button>
                 </div>
-              </form>
+              ) : (
+                <form onSubmit={handleCreateUnit} className="flex-1 p-6 space-y-6 overflow-y-auto">
+                  {modalError && (
+                    <div className="bg-red-50 border border-red-200 p-4 rounded-xl flex items-start space-x-2.5 text-xs text-red-700">
+                      <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 mt-0.5" />
+                      <span>{modalError}</span>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-semibold text-primary-text mb-1">Department Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="E.g., Choir, Ushers, Youth"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-primary-text mb-1">Description</label>
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary h-24"
+                      placeholder="Provide a brief description of the department's mandate..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-primary-text mb-1">Unit Head Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={unitHeadEmail}
+                      onChange={(e) => setUnitHeadEmail(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="leader@graceplace.org"
+                    />
+                    <p className="text-xxs text-gray-400 mt-1.5 font-sans leading-relaxed">
+                      <strong>Note:</strong> Generating this department will atomically create a Supabase Auth user account with a temporary password and dispatch a welcome credentials email.
+                    </p>
+                  </div>
+
+                  <div className="border-t border-gray-100 pt-6 flex space-x-4">
+                    <button
+                      type="button"
+                      onClick={handleCloseModal}
+                      className="flex-1 py-2.5 border border-gray-300 text-gray-500 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isCreating}
+                      className="flex-1 py-2.5 bg-primary text-white font-semibold rounded-xl hover:bg-indigo-800 transition-colors text-sm flex items-center justify-center cursor-pointer"
+                    >
+                      {isCreating && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
+                      Create Department
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         </div>

@@ -151,7 +151,8 @@ router.post('/', async (req: AuthenticatedRequest, res: Response) => {
       message: 'Unit and Unit Head account created successfully. Welcome email sent.',
       unitId: createdUnitId,
       unitHeadId: createdAuthUserId,
-      emailSent
+      emailSent,
+      tempPassword
     });
 
   } catch (err) {
@@ -275,7 +276,8 @@ router.post('/:id/change-head', async (req: AuthenticatedRequest, res: Response)
     return res.status(200).json({
       message: 'Unit head changed successfully. Unit is frozen pending new head onboarding.',
       newUnitHeadId: newAuthUserId,
-      emailSent
+      emailSent,
+      tempPassword
     });
 
   } catch (err) {
