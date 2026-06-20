@@ -228,3 +228,31 @@ create policy "Admins have full access to monthly summaries"
 create policy "Admins can view notification logs"
   on public.notification_log for select
   using (public.is_admin());
+
+-- ==========================================
+-- 4. STORAGE BUCKET CONFIGURATION
+-- ==========================================
+
+-- Create reports bucket
+insert into storage.buckets (id, name, public)
+values ('reports', 'reports', true)
+on conflict (id) do nothing;
+
+-- Enable RLS on storage.objects
+alter table storage.objects enable row level security;
+
+-- Storage upload policy: authenticated users can insert files into reports bucket
+create policy "Allow authenticated users to upload reports"
+  on storage.objects for insert
+  with check (
+    bucket_id = 'reports' 
+    and auth.role() = 'authenticated'
+  );
+
+-- Storage read policy: authenticated users can select files from reports bucket
+create policy "Allow authenticated users to read reports"
+  on storage.objects for select
+  using (
+    bucket_id = 'reports' 
+    and auth.role() = 'authenticated'
+  );
