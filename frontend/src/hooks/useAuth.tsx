@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Session } from '@supabase/supabase-js';
+import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 export interface UserProfile {
   id: string;
@@ -32,6 +34,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -90,13 +94,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     // Listen to authentication state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       setSession(currentSession);
       if (currentSession?.user) {
         await fetchProfile(currentSession.user.id);
       } else {
         setUser(null);
         setIsLoading(false);
+      }
+
+      if (event === 'SIGNED_OUT' || currentSession === null) {
+        queryClient.clear();
+        navigate('/login', { replace: true });
       }
     });
 

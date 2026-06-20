@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useLogout } from '../../hooks/useLogout';
 import { 
   LayoutDashboard, 
   Layers, 
@@ -9,11 +10,13 @@ import {
   Trophy, 
   Users, 
   Settings, 
-  LogOut 
+  LogOut,
+  Loader2
 } from 'lucide-react';
 
 export const AdminSidebar: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
+  const { logout, isLoggingOut } = useLogout();
   const churchName = import.meta.env.VITE_CHURCH_NAME || 'Grace Place';
 
   const menuItems = [
@@ -58,31 +61,28 @@ export const AdminSidebar: React.FC = () => {
       </nav>
 
       {/* Current User Info & Logout Button */}
-      <div className="p-4 border-t border-indigo-900 bg-indigo-950/50">
-        <div className="flex items-center space-x-3 mb-3 px-2">
-          {user?.avatar_url ? (
-            <img src={user.avatar_url} alt={user.full_name || 'Profile'} className="h-9 w-9 rounded-full object-cover border border-indigo-800" />
-          ) : (
-            <div className="h-9 w-9 rounded-full bg-indigo-900 border border-indigo-700 flex items-center justify-center font-bold text-white text-sm">
-              {(user?.full_name || 'A').charAt(0).toUpperCase()}
-            </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-white truncate leading-tight">
-              {user?.full_name || 'Administrator'}
-            </p>
-            <p className="text-xs text-indigo-400 truncate leading-none mt-1">
-              {user?.email}
-            </p>
-          </div>
+      <div className="p-4 border-t border-indigo-900 bg-indigo-950/50 space-y-4">
+        {/* User Identity Block */}
+        <div className="px-2 text-sm text-gray-500">
+          <p className="text-gray-700 font-medium truncate">
+            {user?.full_name || 'Administrator'}
+          </p>
+          <p className="text-xs truncate mt-0.5">
+            {user?.email}
+          </p>
         </div>
 
         <button
-          onClick={signOut}
-          className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-indigo-300 hover:bg-red-950/30 hover:text-red-400 transition-colors cursor-pointer"
+          onClick={logout}
+          disabled={isLoggingOut}
+          className="w-full flex items-center space-x-3 px-2 py-2 text-sm font-medium text-indigo-300 hover:text-[#DC2626] transition-colors duration-150 cursor-pointer disabled:opacity-50"
         >
-          <LogOut className="h-5 w-5 shrink-0" />
-          <span>Sign Out</span>
+          {isLoggingOut ? (
+            <Loader2 className="h-5 w-5 shrink-0 animate-spin" />
+          ) : (
+            <LogOut className="h-5 w-5 shrink-0" />
+          )}
+          <span>{isLoggingOut ? 'Signing Out...' : 'Sign Out'}</span>
         </button>
       </div>
     </aside>

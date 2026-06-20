@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useLogout } from '../../hooks/useLogout';
 import { 
   LayoutDashboard, 
   Layers, 
@@ -12,11 +13,14 @@ import {
   Trophy,
   Users as UsersIcon,
   MoreHorizontal,
-  X
+  X,
+  LogOut,
+  Loader2
 } from 'lucide-react';
 
 export const MobileTabBar: React.FC = () => {
   const { user } = useAuth();
+  const { logout, isLoggingOut } = useLogout();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   if (!user) return null;
@@ -38,12 +42,22 @@ export const MobileTabBar: React.FC = () => {
     { name: 'Overview', path: '/unit-head', icon: LayoutDashboard, end: true },
     { name: 'Report', path: '/unit-head/report', icon: FileInput, end: false },
     { name: 'History', path: '/unit-head/history', icon: History, end: false },
-    { name: 'Settings', path: '/unit-head/settings', icon: Settings, end: false },
   ];
 
-  const isMoreActive = adminMoreTabs.some(
+  const unitHeadMoreTabs = [
+    { name: 'Settings', path: '/unit-head/settings', icon: Settings },
+  ];
+
+  const currentMoreTabs = user.role === 'admin' ? adminMoreTabs : unitHeadMoreTabs;
+
+  const isMoreActive = currentMoreTabs.some(
     tab => window.location.pathname.startsWith(tab.path)
   );
+
+  const handleLogoutClick = async () => {
+    setIsMoreOpen(false);
+    await logout();
+  };
 
   return (
     <>
@@ -67,41 +81,43 @@ export const MobileTabBar: React.FC = () => {
                 <span className="hidden min-[375px]:block">{tab.name}</span>
               </NavLink>
             ))}
-
-            <button
-              onClick={() => setIsMoreOpen(true)}
-              className={`flex flex-col items-center space-y-1 py-1 px-2.5 rounded-xl text-xxs font-semibold transition-colors cursor-pointer ${
-                isMoreActive || isMoreOpen
-                  ? 'text-white bg-indigo-900'
-                  : 'text-indigo-300 hover:text-white'
-              }`}
-            >
-              <MoreHorizontal className="h-5 w-5 shrink-0" />
-              <span className="hidden min-[375px]:block">More</span>
-            </button>
           </>
         ) : (
-          unitHeadTabs.map((tab) => (
-            <NavLink
-              key={tab.name}
-              to={tab.path}
-              end={tab.end}
-              className={({ isActive }) =>
-                `flex flex-col items-center space-y-1 py-1 px-2.5 rounded-xl text-xxs font-semibold transition-colors ${
-                  isActive 
-                    ? 'text-white bg-indigo-900' 
-                    : 'text-indigo-300 hover:text-white'
-                }`
-              }
-            >
-              <tab.icon className="h-5 w-5 shrink-0" />
-              <span className="hidden min-[375px]:block">{tab.name}</span>
-            </NavLink>
-          ))
+          <>
+            {unitHeadTabs.map((tab) => (
+              <NavLink
+                key={tab.name}
+                to={tab.path}
+                end={tab.end}
+                className={({ isActive }) =>
+                  `flex flex-col items-center space-y-1 py-1 px-2.5 rounded-xl text-xxs font-semibold transition-colors ${
+                    isActive && !isMoreActive
+                      ? 'text-white bg-indigo-900' 
+                      : 'text-indigo-300 hover:text-white'
+                  }`
+                }
+              >
+                <tab.icon className="h-5 w-5 shrink-0" />
+                <span className="hidden min-[375px]:block">{tab.name}</span>
+              </NavLink>
+            ))}
+          </>
         )}
+
+        <button
+          onClick={() => setIsMoreOpen(true)}
+          className={`flex flex-col items-center space-y-1 py-1 px-2.5 rounded-xl text-xxs font-semibold transition-colors cursor-pointer ${
+            isMoreActive || isMoreOpen
+              ? 'text-white bg-indigo-900'
+              : 'text-indigo-300 hover:text-white'
+          }`}
+        >
+          <MoreHorizontal className="h-5 w-5 shrink-0" />
+          <span className="hidden min-[375px]:block">More</span>
+        </button>
       </nav>
 
-      {/* Admin More Drawer Bottom Sheet */}
+      {/* More Drawer Bottom Sheet */}
       {isMoreOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex items-end animate-fade-in">
           {/* Overlay */}
@@ -128,7 +144,7 @@ export const MobileTabBar: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 gap-2 pt-2">
-              {adminMoreTabs.map((tab) => {
+              {currentMoreTabs.map((tab) => {
                 const isActive = window.location.pathname.startsWith(tab.path);
                 return (
                   <NavLink
@@ -147,6 +163,23 @@ export const MobileTabBar: React.FC = () => {
                 );
               })}
             </div>
+
+            {/* Visual Separator & Logout button */}
+            <div className="border-t border-indigo-900 pt-3">
+              <button
+                onClick={handleLogoutClick}
+                disabled={isLoggingOut}
+                className="w-full flex items-center space-x-4 p-3 rounded-2xl text-sm font-semibold text-[#DC2626] hover:bg-red-950/20 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {isLoggingOut ? (
+                  <Loader2 className="h-5 w-5 shrink-0 animate-spin text-[#DC2626]" />
+                ) : (
+                  <LogOut className="h-5 w-5 shrink-0" />
+                )}
+                <span>{isLoggingOut ? 'Signing Out...' : 'Sign Out'}</span>
+              </button>
+            </div>
+
           </div>
         </div>
       )}
