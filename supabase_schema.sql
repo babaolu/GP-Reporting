@@ -238,9 +238,6 @@ insert into storage.buckets (id, name, public)
 values ('reports', 'reports', true)
 on conflict (id) do nothing;
 
--- Enable RLS on storage.objects
-alter table storage.objects enable row level security;
-
 -- Storage upload policy: authenticated users can insert files into reports bucket
 create policy "Allow authenticated users to upload reports"
   on storage.objects for insert
