@@ -105,33 +105,45 @@ export const ReportSlideOver: React.FC<ReportSlideOverProps> = ({ reportId, onCl
     fetchReportDetails(vId);
   };
 
+  // Prevent body scroll when open (scroll trap)
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
   if (!reportId) return null;
 
   return (
-    <div className="fixed inset-0 overflow-hidden z-50 animate-fade-in">
+    <div className="fixed inset-0 overflow-hidden z-50 animate-fade-in flex flex-col justify-end lg:justify-start">
+      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity" onClick={onClose} />
       
-      <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-2xl bg-white flex flex-col h-full shadow-2xl border-l border-gray-100 animate-slide-in">
-          
-          {/* Header */}
-          <div className="bg-indigo-950 p-6 text-white flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold font-display leading-tight">
-                {report?.units?.name || 'Department Report'}
-              </h2>
-              <p className="text-xs text-indigo-300 mt-1 font-sans">
-                {report ? formatMonthLabel(report.month) : ''}  |  Version {report?.version || 1}
-              </p>
-            </div>
-            
-            <button
-              onClick={onClose}
-              className="text-indigo-200 hover:text-white p-2 rounded-full hover:bg-indigo-900/50 transition-colors cursor-pointer"
-            >
-              <X className="h-6 w-6" />
-            </button>
+      {/* Inner panel: bottom sheet on mobile, right panel on desktop */}
+      <div className="relative w-full bg-white flex flex-col h-[90vh] rounded-t-3xl shadow-2xl border-t border-gray-200 animate-slide-up-bottom lg:h-full lg:w-screen lg:max-w-2xl lg:rounded-none lg:border-t-0 lg:border-l lg:border-gray-100 lg:animate-slide-in lg:self-end">
+        {/* Drag handle bar at top on mobile */}
+        <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-2.5 shrink-0 lg:hidden" />
+
+        {/* Header */}
+        <div className="bg-indigo-950 p-5 mt-2 lg:mt-0 text-white flex items-center justify-between shrink-0">
+          <div>
+            <h2 className="text-xl lg:text-2xl font-bold font-display leading-tight">
+              {report?.units?.name || 'Department Report'}
+            </h2>
+            <p className="text-xs text-indigo-300 mt-1 font-sans">
+              {report ? formatMonthLabel(report.month) : ''}  |  Version {report?.version || 1}
+            </p>
           </div>
+          
+          <button
+            onClick={onClose}
+            className="text-indigo-200 hover:text-white p-2.5 rounded-full hover:bg-indigo-900/50 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
 
           {isLoading ? (
             <div className="flex-1 flex flex-col items-center justify-center">
@@ -380,7 +392,6 @@ export const ReportSlideOver: React.FC<ReportSlideOverProps> = ({ reportId, onCl
             </>
           )}
 
-        </div>
       </div>
     </div>
   );

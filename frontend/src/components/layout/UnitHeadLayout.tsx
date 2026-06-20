@@ -32,13 +32,13 @@ export const UnitHeadLayout: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-page-bg font-sans">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-page-bg font-sans">
       {/* Desktop Sidebar */}
       <UnitHeadSidebar />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0 overflow-y-auto">
-        <div className="max-w-7xl w-full mx-auto p-6 md:p-8">
+      <main className="flex-1 flex flex-col min-w-0 pb-20 lg:pb-0 overflow-y-auto">
+        <div className="max-w-7xl w-full mx-auto p-4 lg:p-8">
           <Outlet />
         </div>
       </main>

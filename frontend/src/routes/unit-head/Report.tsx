@@ -240,7 +240,7 @@ _Outline what the unit intends to focus on in the coming month._`;
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Page Header */}
-      <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
+      <div className="bg-white p-6 lg:p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
         <div>
           <h1 className="text-3xl font-bold font-display text-primary-text mb-1">
             Submit {unitName} Monthly Report
@@ -250,7 +250,7 @@ _Outline what the unit intends to focus on in the coming month._`;
           </p>
         </div>
 
-        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl px-5 py-3 text-sm text-indigo-900 shrink-0">
+        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl px-5 py-3 text-sm text-indigo-900 shrink-0 w-full lg:w-auto text-center lg:text-left">
           <span className="font-bold">Deadline Date: </span>
           {deadlineLoading ? 'Loading...' : deadline?.deadline_date ? new Date(deadline.deadline_date).toLocaleDateString() : 'N/A'}
         </div>
@@ -278,7 +278,7 @@ _Outline what the unit intends to focus on in the coming month._`;
           <button
             type="button"
             onClick={() => handleTabChange('write')}
-            className={`flex-1 flex items-center justify-center py-4 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
+            className={`flex-1 flex items-center justify-center h-12 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
               activeTab === 'write' 
                 ? 'border-primary text-primary bg-indigo-50/10' 
                 : 'border-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-50/50'
@@ -290,7 +290,7 @@ _Outline what the unit intends to focus on in the coming month._`;
           <button
             type="button"
             onClick={() => handleTabChange('upload')}
-            className={`flex-1 flex items-center justify-center py-4 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
+            className={`flex-1 flex items-center justify-center h-12 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
               activeTab === 'upload' 
                 ? 'border-primary text-primary bg-indigo-50/10' 
                 : 'border-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-50/50'
@@ -368,7 +368,8 @@ _Outline what the unit intends to focus on in the coming month._`;
                     <FileUp className="h-8 w-8" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-primary-text font-display">Drag & Drop file here</p>
+                    <p className="text-sm font-bold text-primary-text font-display hidden lg:block">Drag & Drop file here</p>
+                    <p className="text-sm font-bold text-primary-text font-display block lg:hidden">Tap to select a file</p>
                     <p className="text-xs text-gray-500 mt-1">Accepts PDF, Word (.docx) and Markdown (.md) documents up to 10 MB</p>
                   </div>
                   <button
@@ -402,11 +403,11 @@ _Outline what the unit intends to focus on in the coming month._`;
           )}
 
           {/* Action Trigger */}
-          <div className="border-t border-gray-100 pt-6 flex justify-end">
+          <div className="border-t border-gray-100 pt-4 lg:pt-6 flex justify-end sticky bottom-0 bg-white py-4 px-6 z-10 -mx-6 md:-mx-8 lg:static lg:p-0 lg:border-t-0 lg:bg-transparent lg:shadow-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center bg-primary text-white font-semibold py-3 px-6 rounded-2xl hover:bg-indigo-800 disabled:opacity-50 transition-all cursor-pointer shadow-md shadow-indigo-100 hover:shadow-indigo-200 text-sm"
+              className="w-full lg:w-auto flex items-center justify-center bg-primary text-white font-semibold min-h-[48px] h-12 lg:h-auto lg:min-h-0 lg:py-3 lg:px-6 rounded-2xl hover:bg-indigo-800 disabled:opacity-50 transition-all cursor-pointer shadow-md shadow-indigo-100 hover:shadow-indigo-200 text-sm"
             >
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />

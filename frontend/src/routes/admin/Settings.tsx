@@ -89,8 +89,8 @@ export const Settings: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm flex items-center space-x-4">
-        <div className="h-14 w-14 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-center text-primary shrink-0">
+      <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center text-center sm:text-left space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="h-14 w-14 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-center text-primary shrink-0 mx-auto sm:mx-0">
           <SettingsIcon className="h-6 w-6" />
         </div>
         <div>
@@ -128,7 +128,7 @@ export const Settings: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleUpdateDeadline} className="space-y-4">
+          <form onSubmit={handleUpdateDeadline} className="space-y-4 max-w-lg w-full">
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Reporting Period</label>
               <select
@@ -138,7 +138,7 @@ export const Settings: React.FC = () => {
                   setSuccessMsg(null);
                   setErrorMsg(null);
                 }}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm text-primary-text focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full h-11 border border-gray-300 rounded-xl px-3 text-base text-primary-text focus:outline-none focus:ring-2 focus:ring-primary bg-white"
               >
                 {upcomingMonths.map((m) => (
                   <option key={m} value={m}>
@@ -170,7 +170,7 @@ export const Settings: React.FC = () => {
                 disabled={isLocked || loadingDeadline}
                 value={deadlineDate}
                 onChange={(e) => setDeadlineDate(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm text-primary-text focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                className="w-full h-11 border border-gray-300 rounded-xl px-3 text-base text-primary-text focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -187,7 +187,7 @@ export const Settings: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLocked || isSubmitting || loadingDeadline || deadlineDate === (deadline?.deadline_date || '')}
-                className="px-5 py-2.5 bg-primary text-white font-semibold text-xs rounded-xl hover:bg-indigo-800 disabled:opacity-50 transition-colors cursor-pointer flex items-center"
+                className="w-full sm:w-auto h-11 px-5 bg-primary text-white font-semibold text-xs rounded-xl hover:bg-indigo-800 disabled:opacity-50 transition-colors cursor-pointer flex items-center justify-center"
               >
                 {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
                 Save Deadline Date
@@ -207,7 +207,7 @@ export const Settings: React.FC = () => {
               <p className="text-xxs text-gray-400 font-sans mt-0.5">Customize global display brand settings.</p>
             </div>
 
-            <form onSubmit={handleUpdateChurchName} className="space-y-4">
+            <form onSubmit={handleUpdateChurchName} className="space-y-4 max-w-lg w-full">
               <div>
                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Church Brand Name</label>
                 <input
@@ -215,7 +215,7 @@ export const Settings: React.FC = () => {
                   required
                   value={churchName}
                   onChange={(e) => setChurchName(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm text-primary-text focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full h-11 border border-gray-300 rounded-xl px-3 text-base text-primary-text focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
 
@@ -223,7 +223,7 @@ export const Settings: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting || churchName === (import.meta.env.VITE_CHURCH_NAME || 'Grace Place')}
-                  className="px-5 py-2.5 bg-primary text-white font-semibold text-xs rounded-xl hover:bg-indigo-800 disabled:opacity-50 transition-colors cursor-pointer"
+                  className="w-full sm:w-auto h-11 px-5 bg-primary text-white font-semibold text-xs rounded-xl hover:bg-indigo-800 disabled:opacity-50 transition-colors cursor-pointer flex items-center justify-center"
                 >
                   Save Settings
                 </button>

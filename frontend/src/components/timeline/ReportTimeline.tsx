@@ -12,6 +12,7 @@ interface ReportTimelineProps {
 
 export const ReportTimeline: React.FC<ReportTimelineProps> = ({ unitId }) => {
   const [reports, setReports] = useState<any[]>([]);
+  const [unitName, setUnitName] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [activeReportId, setActiveReportId] = useState<string | null>(null);
 
@@ -23,6 +24,17 @@ export const ReportTimeline: React.FC<ReportTimelineProps> = ({ unitId }) => {
     if (!unitId) return;
     setIsLoading(true);
     try {
+      // 1. Fetch unit name
+      const { data: unitData } = await supabase
+        .from('units')
+        .select('name')
+        .eq('id', unitId)
+        .single();
+      if (unitData) {
+        setUnitName(unitData.name);
+      }
+
+      // 2. Fetch reports
       const { data, error } = await supabase
         .from('reports')
         .select('*')
@@ -90,22 +102,21 @@ export const ReportTimeline: React.FC<ReportTimelineProps> = ({ unitId }) => {
 
   return (
     <div className="relative space-y-6">
-      {/* Timeline spine connecting vertical nodes */}
-      <div className="absolute left-10 top-6 bottom-6 w-0.5 bg-gray-200 hidden sm:block"></div>
+      {/* Timeline spine connecting vertical nodes (aligned to left-4 on mobile, left-10 on desktop) */}
+      <div className="absolute left-4 lg:left-10 top-6 bottom-6 w-0.5 bg-gray-200"></div>
 
       <div className="space-y-6 relative">
         {months.map((m) => {
           const { status, report } = getMonthStatusAndReport(m);
           return (
-            <div key={m} className="relative sm:pl-16">
-              {/* Spine connection point indicator */}
-              <div className="absolute left-[38px] top-6 h-3 w-3 rounded-full bg-gray-200 border-2 border-white hidden sm:block"></div>
-              
+            <div key={m} className="relative">
               <MonthNode
                 month={m}
                 status={status}
                 submittedAt={report?.submitted_at}
                 version={report?.version}
+                unitName={unitName}
+                aiSummaryPreview={report?.ai_summary?.summary}
                 onClick={() => report && setActiveReportId(report.id)}
               />
             </div>

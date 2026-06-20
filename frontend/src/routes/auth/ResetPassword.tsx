@@ -49,8 +49,8 @@ export const ResetPassword: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-page-bg px-4 py-12 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-page-bg px-4 py-8 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-6 sm:p-8 rounded-3xl shadow-xl border border-gray-100">
         <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-indigo-50 rounded-2xl flex items-center justify-center border border-indigo-100 mb-4">
             <KeyRound className="h-8 w-8 text-primary" />
@@ -87,7 +87,7 @@ export const ResetPassword: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
+                  className="w-full px-4 h-11 border border-gray-300 rounded-xl text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-base"
                   placeholder="••••••••"
                 />
               </div>
@@ -99,7 +99,7 @@ export const ResetPassword: React.FC = () => {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
+                  className="w-full px-4 h-11 border border-gray-300 rounded-xl text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-base"
                   placeholder="••••••••"
                 />
               </div>
@@ -108,7 +108,7 @@ export const ResetPassword: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 bg-primary text-white font-semibold rounded-xl hover:bg-indigo-800 disabled:opacity-50 transition-colors flex items-center justify-center cursor-pointer"
+              className="w-full h-11 bg-primary text-white font-semibold rounded-xl hover:bg-indigo-800 disabled:opacity-50 transition-colors flex items-center justify-center cursor-pointer"
             >
               {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               Update Password

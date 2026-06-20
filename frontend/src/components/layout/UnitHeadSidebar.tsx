@@ -21,7 +21,7 @@ export const UnitHeadSidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 bg-indigo-950 text-indigo-100 flex flex-col min-h-screen border-r border-indigo-900 hidden md:flex shrink-0">
+    <aside className="w-64 bg-indigo-950 text-indigo-100 flex flex-col min-h-screen border-r border-indigo-900 hidden lg:flex shrink-0">
       {/* Brand Header */}
       <div className="p-6 border-b border-indigo-900 bg-indigo-950">
         <h1 className="text-2xl font-bold font-display text-white truncate">{churchName}</h1>

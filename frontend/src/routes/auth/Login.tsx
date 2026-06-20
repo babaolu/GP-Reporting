@@ -52,8 +52,8 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-page-bg px-4 py-12 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl border border-gray-100 transition-all duration-300 hover:shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-page-bg px-4 py-8 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-6 sm:p-8 rounded-3xl shadow-xl border border-gray-100 transition-all duration-300 hover:shadow-2xl">
         <div className="text-center">
           {/* Logo Icon */}
           <div className="mx-auto h-16 w-16 bg-indigo-50 rounded-2xl flex items-center justify-center border border-indigo-100 mb-4">
@@ -88,7 +88,7 @@ export const Login: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-all"
+                className="appearance-none block w-full px-4 h-11 border border-gray-300 rounded-xl placeholder-gray-400 text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-base transition-all"
                 placeholder="you@yourdomain.com"
               />
             </div>
@@ -113,7 +113,7 @@ export const Login: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-4 py-3 pr-11 border border-gray-300 rounded-xl placeholder-gray-400 text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-all"
+                  className="appearance-none block w-full px-4 h-11 pr-11 border border-gray-300 rounded-xl placeholder-gray-400 text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-base transition-all"
                   placeholder="••••••••"
                 />
                 <button
@@ -136,7 +136,7 @@ export const Login: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-primary hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 transition-all cursor-pointer"
+              className="group relative w-full flex justify-center items-center h-11 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-primary hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 transition-all cursor-pointer"
             >
               {isSubmitting ? (
                 <Loader2 className="h-5 w-5 animate-spin mr-2" />

@@ -11,7 +11,8 @@ import {
   ArrowDownCircle, 
   Loader2,
   X,
-  AlertTriangle 
+  AlertTriangle,
+  MoreVertical
 } from 'lucide-react';
 
 interface UserItem {
@@ -37,6 +38,9 @@ export const Users: React.FC = () => {
   const [demoteUserId, setDemoteUserId] = useState<string | null>(null);
   const [demoteUnitId, setDemoteUnitId] = useState('');
   const [isDemoting, setIsDemoting] = useState(false);
+
+  // Mobile actions sheet state
+  const [selectedUserForActions, setSelectedUserForActions] = useState<UserItem | null>(null);
 
   const loadUsersAndUnits = async () => {
     setIsLoading(true);
@@ -146,7 +150,8 @@ export const Users: React.FC = () => {
         </div>
       ) : (
         <div className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-indigo-950 text-indigo-100 text-xs font-semibold uppercase tracking-wider">
@@ -251,19 +256,155 @@ export const Users: React.FC = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Card List View */}
+          <div className="block lg:hidden p-4 space-y-4">
+            {users.map((profile) => {
+              const isSelf = currentUser?.id === profile.id;
+              const isSuper = profile.is_super_admin;
+              const statusColors = {
+                active: 'bg-green-50 text-green-700 border-green-200',
+                pending: 'bg-amber-50 text-amber-700 border-amber-200',
+                suspended: 'bg-red-50 text-red-700 border-red-200'
+              };
+
+              return (
+                <div key={profile.id} className="bg-white p-4 rounded-2xl border border-gray-100 flex flex-col space-y-3 relative shadow-sm">
+                  <div className="flex justify-between items-start">
+                    <div className="min-w-0 pr-6">
+                      <h4 className="font-bold text-primary-text flex flex-wrap items-center gap-1.5 text-sm">
+                        {profile.full_name || 'Pending Onboarding'}
+                        {isSelf && <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded-full border border-indigo-100 shrink-0">You</span>}
+                        {isSuper && <span className="text-[10px] font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded-full border border-yellow-200 shrink-0">Super Admin</span>}
+                      </h4>
+                      <p className="text-xs text-gray-500 font-sans mt-0.5 truncate">{profile.email}</p>
+                    </div>
+                    <div className="flex items-center space-x-2 shrink-0">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase ${statusColors[profile.account_status]}`}>
+                        {profile.account_status}
+                      </span>
+                      {!isSelf && !isSuper && (
+                        <button
+                          onClick={() => setSelectedUserForActions(profile)}
+                          className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 cursor-pointer shrink-0"
+                          title="Open Actions Menu"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs pt-2 border-t border-gray-50">
+                    <div>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Role</span>
+                      <span className="text-primary-text font-medium uppercase text-[11px]">{profile.role === 'admin' ? 'Admin' : 'Unit Leader'}</span>
+                    </div>
+                    {profile.role !== 'admin' && (
+                      <div className="text-right">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Department</span>
+                        <span className="text-gray-600 font-medium">{profile.units?.name || 'Unassigned'}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            {users.length === 0 && (
+              <p className="text-center text-sm text-gray-400 py-6">No users found.</p>
+            )}
+          </div>
         </div>
       )}
 
-      {/* DEMOTE ADMIN MODAL */}
+      {/* MOBILE ACTIONS BOTTOM SHEET */}
+      {selectedUserForActions && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center lg:hidden">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs animate-fade-in" onClick={() => setSelectedUserForActions(null)} />
+          <div className="bg-white w-full rounded-t-3xl border-t border-gray-200 p-6 relative z-10 shadow-2xl animate-slide-up-bottom pb-safe max-h-[80vh] overflow-y-auto space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-gray-100">
+              <div className="min-w-0">
+                <h4 className="font-bold text-primary-text truncate text-base">{selectedUserForActions.full_name || 'Pending Onboarding'}</h4>
+                <p className="text-xs text-gray-500 truncate font-sans">{selectedUserForActions.email}</p>
+              </div>
+              <button onClick={() => setSelectedUserForActions(null)} className="text-gray-400 hover:text-gray-600 cursor-pointer p-1">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {selectedUserForActions.account_status === 'suspended' ? (
+                <button
+                  onClick={() => {
+                    handleUnsuspend(selectedUserForActions.id);
+                    setSelectedUserForActions(null);
+                  }}
+                  className="w-full h-12 px-4 bg-green-50 text-green-700 rounded-xl text-sm font-semibold border border-green-200 hover:bg-green-100 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <UserCheck className="h-4 w-4" /> Activate Account
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    handleSuspend(selectedUserForActions.id);
+                    setSelectedUserForActions(null);
+                  }}
+                  className="w-full h-12 px-4 bg-red-50 text-red-600 rounded-xl text-sm font-semibold border border-red-200 hover:bg-red-100 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <UserX className="h-4 w-4" /> Suspend Account
+                </button>
+              )}
+
+              {currentUser?.is_super_admin && (
+                <>
+                  {selectedUserForActions.role === 'unit_head' ? (
+                    <button
+                      onClick={() => {
+                        handlePromote(selectedUserForActions.id);
+                        setSelectedUserForActions(null);
+                      }}
+                      className="w-full h-12 px-4 bg-indigo-50 text-primary rounded-xl text-sm font-semibold border border-indigo-200 hover:bg-indigo-100 cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <ArrowUpCircle className="h-4 w-4" /> Promote to Admin
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        handleDemoteClick(selectedUserForActions.id);
+                        setSelectedUserForActions(null);
+                      }}
+                      className="w-full h-12 px-4 bg-orange-50 text-orange-700 rounded-xl text-sm font-semibold border border-orange-200 hover:bg-orange-100 cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <ArrowDownCircle className="h-4 w-4" /> Demote to Coordinator
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      handleDeleteUser(selectedUserForActions.id);
+                      setSelectedUserForActions(null);
+                    }}
+                    className="w-full h-12 px-4 bg-red-100 text-red-700 rounded-xl text-sm font-semibold border border-red-200 hover:bg-red-200 cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" /> Delete Account Permanently
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DEMOTE ADMIN MODAL / BOTTOM SHEET */}
       {showDemoteModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" onClick={() => setShowDemoteModal(false)} />
-          <div className="bg-white max-w-sm w-full p-6 rounded-3xl shadow-2xl border border-gray-100 relative z-10 animate-scale-in space-y-4">
+        <div className="fixed inset-0 z-50 flex items-end justify-center lg:items-center lg:p-4 animate-fade-in">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs animate-fade-in" onClick={() => setShowDemoteModal(false)} />
+          <div className="bg-white w-full rounded-t-3xl border-t border-gray-200 p-6 relative z-10 shadow-2xl animate-slide-up-bottom pb-safe max-h-[90vh] overflow-y-auto lg:max-w-sm lg:rounded-3xl lg:border lg:shadow-2xl lg:animate-scale-in space-y-4 lg:pb-6">
             <div className="flex justify-between items-center border-b border-gray-100 pb-2">
               <h3 className="text-lg font-bold font-display text-primary-text flex items-center">
                 <ArrowDownCircle className="h-5 w-5 text-orange-600 mr-2" /> Demote Admin
               </h3>
-              <button onClick={() => setShowDemoteModal(false)} className="text-gray-400 hover:text-gray-600 cursor-pointer">
+              <button onClick={() => setShowDemoteModal(false)} className="text-gray-400 hover:text-gray-600 cursor-pointer p-1">
                 <X className="h-5 w-5" />
               </button>
             </div>

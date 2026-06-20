@@ -123,7 +123,7 @@ export const Summaries: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header Panel */}
-      <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
+      <div className="bg-white p-6 lg:p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
         <div>
           <h1 className="text-3xl font-bold font-display text-primary-text mb-1 flex items-center">
             <BrainCircuit className="h-8 w-8 text-primary mr-2" /> AI Monthly Insights
@@ -133,12 +133,12 @@ export const Summaries: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center space-x-3 shrink-0">
+        <div className="flex items-center space-x-3 shrink-0 w-full lg:w-auto">
           <Calendar className="h-5 w-5 text-gray-400" />
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
-            className="border border-gray-200 rounded-xl text-sm px-4 py-2.5 text-primary-text focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full lg:w-auto border border-gray-200 rounded-xl text-sm px-4 py-2.5 text-primary-text focus:outline-none focus:ring-2 focus:ring-primary"
           >
             {months.map((m) => (
               <option key={m} value={m}>
@@ -150,10 +150,10 @@ export const Summaries: React.FC = () => {
       </div>
 
       {/* Tabs list */}
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b border-gray-200 overflow-x-auto whitespace-nowrap scrollbar-none pb-px">
         <button
           onClick={() => setActiveTab('this-month')}
-          className={`py-3 px-6 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
+          className={`py-3 px-6 text-sm font-semibold border-b-2 transition-all cursor-pointer shrink-0 ${
             activeTab === 'this-month' ? 'border-primary text-primary font-bold' : 'border-transparent text-gray-400 hover:text-gray-600'
           }`}
         >
@@ -161,7 +161,7 @@ export const Summaries: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveTab('trends')}
-          className={`py-3 px-6 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
+          className={`py-3 px-6 text-sm font-semibold border-b-2 transition-all cursor-pointer shrink-0 ${
             activeTab === 'trends' ? 'border-primary text-primary font-bold' : 'border-transparent text-gray-400 hover:text-gray-600'
           }`}
         >
@@ -169,7 +169,7 @@ export const Summaries: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveTab('themes')}
-          className={`py-3 px-6 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
+          className={`py-3 px-6 text-sm font-semibold border-b-2 transition-all cursor-pointer shrink-0 ${
             activeTab === 'themes' ? 'border-primary text-primary font-bold' : 'border-transparent text-gray-400 hover:text-gray-600'
           }`}
         >
@@ -183,13 +183,13 @@ export const Summaries: React.FC = () => {
         {/* TAB 1: EXECUTIVE SUMMARY */}
         {activeTab === 'this-month' && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4">
               <h3 className="text-xl font-bold font-display text-primary-text">Monthly Overview</h3>
               
               <button
                 onClick={handleRegenerate}
                 disabled={isRegenerating}
-                className="px-4 py-2 bg-primary hover:bg-indigo-800 text-white disabled:opacity-50 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center shadow-md shadow-indigo-100"
+                className="w-full sm:w-auto px-4 py-2 bg-primary hover:bg-indigo-800 text-white disabled:opacity-50 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center shadow-md shadow-indigo-100"
               >
                 {isRegenerating ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
@@ -274,7 +274,7 @@ export const Summaries: React.FC = () => {
                       {/* Accordion header */}
                       <button
                         onClick={() => handleToggleTrend(u.id)}
-                        className={`w-full flex items-center justify-between p-4 text-left font-bold text-sm text-primary-text hover:bg-gray-50 transition-colors cursor-pointer ${
+                        className={`w-full flex items-center justify-between p-4 min-h-[48px] text-left font-bold text-sm text-primary-text hover:bg-gray-50 transition-colors cursor-pointer ${
                           isExpanded ? 'bg-indigo-50/20' : 'bg-white'
                         }`}
                       >

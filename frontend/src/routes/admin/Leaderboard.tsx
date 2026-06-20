@@ -65,7 +65,7 @@ export const Leaderboard: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Page Header */}
-      <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
+      <div className="bg-white p-6 lg:p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
         <div>
           <h1 className="text-3xl font-bold font-display text-primary-text mb-1 flex items-center">
             <Trophy className="h-8 w-8 text-accent mr-2 shrink-0" /> Department Leaderboard
@@ -75,12 +75,12 @@ export const Leaderboard: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 shrink-0">
+        <div className="flex items-center space-x-2 shrink-0 w-full lg:w-auto">
           <Calendar className="h-5 w-5 text-gray-400" />
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
-            className="border border-gray-200 rounded-xl text-sm px-4 py-2 text-primary-text focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full lg:w-auto border border-gray-200 rounded-xl text-sm px-4 py-2 text-primary-text focus:outline-none focus:ring-2 focus:ring-primary"
           >
             {months.map((m) => (
               <option key={m} value={m}>
@@ -119,10 +119,10 @@ export const Leaderboard: React.FC = () => {
 
           {/* TOP 3 PODIUM DISPLAY */}
           {topThree.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {topThree.map((unit, idx) => {
                 const podiumColors = [
-                  { bg: 'from-amber-100 to-yellow-50 border-yellow-200 text-yellow-800', badge: 'bg-yellow-400 text-yellow-950', size: 'md:scale-105 shadow-md shadow-yellow-50' }, // 1st Place (Gold)
+                  { bg: 'from-amber-100 to-yellow-50 border-yellow-200 text-yellow-800', badge: 'bg-yellow-400 text-yellow-950', size: 'lg:scale-105 shadow-md shadow-yellow-50' }, // 1st Place (Gold)
                   { bg: 'from-slate-100 to-gray-50 border-gray-200 text-slate-800', badge: 'bg-gray-400 text-gray-950', size: 'shadow-sm shadow-gray-50' },          // 2nd Place (Silver)
                   { bg: 'from-orange-100 to-amber-50 border-orange-200 text-orange-800', badge: 'bg-orange-400 text-orange-950', size: 'shadow-sm shadow-orange-50' }       // 3rd Place (Bronze)
                 ];
@@ -163,7 +163,8 @@ export const Leaderboard: React.FC = () => {
 
           {/* TABLE OF REMAINING RANKS */}
           <div className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden">
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-indigo-950 text-indigo-100 text-xs font-semibold uppercase tracking-wider">
@@ -200,6 +201,34 @@ export const Leaderboard: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card List View */}
+            <div className="block lg:hidden p-4 space-y-4">
+              {remainder.map((entry) => (
+                <div key={entry.unitId} className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between gap-4">
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <span className={`font-bold font-mono h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-xs ${
+                      entry.rank === 1 ? 'bg-yellow-400 text-yellow-950 font-extrabold' :
+                      entry.rank === 2 ? 'bg-gray-400 text-gray-950 font-extrabold' :
+                      entry.rank === 3 ? 'bg-orange-400 text-orange-950 font-extrabold' : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      {entry.rank}
+                    </span>
+                    <div className="min-w-0">
+                      <h4 className="font-bold text-primary-text truncate text-sm">{entry.unitName}</h4>
+                      <p className="text-xs text-gray-500 truncate">Coordinator: {entry.headName || 'Not Assigned'}</p>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="font-extrabold font-mono text-primary text-base">{entry.consistencyScore} pts</div>
+                    <p className="text-[10px] text-gray-400">On-Time: {entry.onTimeSubmissions}/{entry.totalActiveMonths}m | Quality: {entry.averageCompleteness}/5</p>
+                  </div>
+                </div>
+              ))}
+              {remainder.length === 0 && (
+                <p className="text-center text-sm text-gray-400 py-4">No remaining department rankings.</p>
+              )}
             </div>
           </div>
 

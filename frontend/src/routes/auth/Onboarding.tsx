@@ -26,6 +26,15 @@ export const Onboarding: React.FC = () => {
   const [telegramCode, setTelegramCode] = useState<string | null>(null);
   const [telegramCodeExpiry, setTelegramCodeExpiry] = useState<string | null>(null);
   const [isLoadingCode, setIsLoadingCode] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopyCode = () => {
+    if (telegramCode) {
+      navigator.clipboard.writeText(telegramCode);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
 
   const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'GracePlaceReportBot';
 
@@ -128,38 +137,41 @@ export const Onboarding: React.FC = () => {
       <div className="max-w-xl w-full bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
         
         {/* Progress Header */}
-        <div className="bg-primary px-8 py-6 text-white text-center">
+        <div className="bg-primary px-6 sm:px-8 py-6 text-white text-center">
           <h2 className="text-2xl font-bold font-display">Account Activation</h2>
           <p className="text-sm text-indigo-200 mt-1 font-sans">
             Please complete these steps to configure your account.
           </p>
 
-          <div className="flex items-center justify-center space-x-4 mt-6">
-            <div className={`flex items-center space-x-2 text-xs font-semibold ${step >= 1 ? 'text-white' : 'text-indigo-300'}`}>
+          <div className="flex items-center justify-center space-x-2 sm:space-x-4 mt-6">
+            <div className={`flex items-center space-x-1.5 sm:space-x-2 text-xs font-semibold ${step >= 1 ? 'text-white' : 'text-indigo-300'}`}>
               <span className={`h-6 w-6 rounded-full flex items-center justify-center text-xs ${step > 1 ? 'bg-green-custom text-white' : step === 1 ? 'bg-accent text-white' : 'bg-indigo-800'}`}>
                 {step > 1 ? '✓' : '1'}
               </span>
-              <span>Change Password</span>
+              <span className="hidden sm:inline">Change Password</span>
+              <span className="inline sm:hidden">Password</span>
             </div>
-            <div className="h-0.5 w-6 bg-indigo-700" />
-            <div className={`flex items-center space-x-2 text-xs font-semibold ${step >= 2 ? 'text-white' : 'text-indigo-300'}`}>
+            <div className="h-0.5 w-4 sm:w-6 bg-indigo-700 font-sans" />
+            <div className={`flex items-center space-x-1.5 sm:space-x-2 text-xs font-semibold ${step >= 2 ? 'text-white' : 'text-indigo-300'}`}>
               <span className={`h-6 w-6 rounded-full flex items-center justify-center text-xs ${step > 2 ? 'bg-green-custom text-white' : step === 2 ? 'bg-accent text-white' : 'bg-indigo-800'}`}>
                 {step > 2 ? '✓' : '2'}
               </span>
-              <span>Complete Profile</span>
+              <span className="hidden sm:inline">Complete Profile</span>
+              <span className="inline sm:hidden">Profile</span>
             </div>
-            <div className="h-0.5 w-6 bg-indigo-700" />
-            <div className={`flex items-center space-x-2 text-xs font-semibold ${step >= 3 ? 'text-white' : 'text-indigo-300'}`}>
+            <div className="h-0.5 w-4 sm:w-6 bg-indigo-700 font-sans" />
+            <div className={`flex items-center space-x-1.5 sm:space-x-2 text-xs font-semibold ${step >= 3 ? 'text-white' : 'text-indigo-300'}`}>
               <span className={`h-6 w-6 rounded-full flex items-center justify-center text-xs ${step === 3 ? 'bg-accent text-white' : 'bg-indigo-800'}`}>
                 3
               </span>
-              <span>Link Telegram</span>
+              <span className="hidden sm:inline">Link Telegram</span>
+              <span className="inline sm:hidden">Telegram</span>
             </div>
           </div>
         </div>
 
         {/* Content Body */}
-        <div className="p-8">
+        <div className="p-6 sm:p-8">
           {errorMsg && (
             <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-xl text-sm text-red-700 mb-6">
               {errorMsg}
@@ -185,7 +197,7 @@ export const Onboarding: React.FC = () => {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
+                    className="w-full h-11 px-4 border border-gray-300 rounded-xl text-base text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="••••••••"
                   />
                   <div className="mt-2 text-xs text-gray-500 flex flex-col space-y-1 bg-gray-50 p-3 rounded-lg border border-gray-100">
@@ -211,7 +223,7 @@ export const Onboarding: React.FC = () => {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
+                    className="w-full h-11 px-4 border border-gray-300 rounded-xl text-base text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="••••••••"
                   />
                 </div>
@@ -220,7 +232,7 @@ export const Onboarding: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3 bg-primary text-white font-semibold rounded-xl hover:bg-indigo-800 disabled:opacity-50 transition-colors flex items-center justify-center cursor-pointer"
+                className="w-full h-11 bg-primary text-white font-semibold rounded-xl hover:bg-indigo-800 disabled:opacity-50 transition-colors flex items-center justify-center cursor-pointer"
               >
                 {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 Next Step <ArrowRight className="h-4 w-4 ml-2" />
@@ -247,7 +259,7 @@ export const Onboarding: React.FC = () => {
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
+                    className="w-full h-11 px-4 border border-gray-300 rounded-xl text-base text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="E.g., John Doe"
                   />
                 </div>
@@ -259,7 +271,7 @@ export const Onboarding: React.FC = () => {
                     required
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
+                    className="w-full h-11 px-4 border border-gray-300 rounded-xl text-base text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="E.g., +234..."
                   />
                 </div>
@@ -270,7 +282,7 @@ export const Onboarding: React.FC = () => {
                     type="url"
                     value={avatarUrl}
                     onChange={(e) => setAvatarUrl(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
+                    className="w-full h-11 px-4 border border-gray-300 rounded-xl text-base text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="https://example.com/photo.jpg"
                   />
                 </div>
@@ -278,7 +290,7 @@ export const Onboarding: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-primary text-white font-semibold rounded-xl hover:bg-indigo-800 transition-colors flex items-center justify-center cursor-pointer"
+                className="w-full h-11 bg-primary text-white font-semibold rounded-xl hover:bg-indigo-800 transition-colors flex items-center justify-center cursor-pointer"
               >
                 Next Step <ArrowRight className="h-4 w-4 ml-2" />
               </button>
@@ -307,6 +319,13 @@ export const Onboarding: React.FC = () => {
                   <div className="text-4xl font-mono font-bold tracking-widest text-primary-text bg-white py-3 px-6 rounded-xl border border-indigo-100 inline-block">
                     {telegramCode}
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyCode}
+                    className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    {isCopied ? 'Copied ✓' : 'Copy Code'}
+                  </button>
                   <p className="text-xs text-gray-500">
                     Expires at <strong>{telegramCodeExpiry}</strong> (valid for 10 minutes)
                   </p>
@@ -335,7 +354,7 @@ export const Onboarding: React.FC = () => {
                 <button
                   onClick={handleCompleteOnboarding}
                   disabled={isSubmitting}
-                  className="w-full py-3 bg-primary text-white font-semibold rounded-xl hover:bg-indigo-800 disabled:opacity-50 transition-colors flex items-center justify-center cursor-pointer"
+                  className="w-full h-11 bg-primary text-white font-semibold rounded-xl hover:bg-indigo-800 disabled:opacity-50 transition-colors flex items-center justify-center cursor-pointer"
                 >
                   {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                   <CheckCircle2 className="h-4 w-4 mr-2" /> Finish Onboarding

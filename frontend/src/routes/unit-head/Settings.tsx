@@ -34,6 +34,7 @@ export const Settings: React.FC = () => {
   const [tgExpiry, setTgExpiry] = useState<string | null>(null);
   const [loadingCode, setLoadingCode] = useState(false);
   const [isPolling, setIsPolling] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   // Preferences
   const [emailNotif, setEmailNotif] = useState(true);
@@ -155,6 +156,14 @@ export const Settings: React.FC = () => {
     }
   };
 
+  const handleCopyCode = () => {
+    if (tgCode) {
+      navigator.clipboard.writeText(tgCode);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
+
   const handleUnlinkTelegram = async () => {
     setIsSubmitting(true);
     setErrorMsg(null);
@@ -184,21 +193,26 @@ export const Settings: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm">
-        <h1 className="text-3xl font-bold font-display text-primary-text mb-1">
-          Portal Settings
-        </h1>
-        <p className="text-sm text-gray-500 font-sans">
-          Manage your personal details, passwords, and bot notifications preference.
-        </p>
+      <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center text-center sm:text-left space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="h-14 w-14 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-center text-primary shrink-0 mx-auto sm:mx-0">
+          <User className="h-6 w-6" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold font-display text-primary-text mb-1">
+            Portal Settings
+          </h1>
+          <p className="text-sm text-gray-500 font-sans">
+            Manage your personal details, passwords, and bot notifications preference.
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Navigation Tabs List */}
-        <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm h-fit space-y-1">
+        <div className="bg-white p-3 rounded-3xl border border-gray-100 shadow-sm h-fit flex flex-row lg:flex-col gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
           <button
             onClick={() => { setActiveTab('profile'); setErrorMsg(null); setSuccessMsg(null); }}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer ${
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer shrink-0 w-auto lg:w-full ${
               activeTab === 'profile' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-primary-text'
             }`}
           >
@@ -208,7 +222,7 @@ export const Settings: React.FC = () => {
           
           <button
             onClick={() => { setActiveTab('password'); setErrorMsg(null); setSuccessMsg(null); }}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer ${
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer shrink-0 w-auto lg:w-full ${
               activeTab === 'password' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-primary-text'
             }`}
           >
@@ -218,7 +232,7 @@ export const Settings: React.FC = () => {
           
           <button
             onClick={() => { setActiveTab('notifications'); setErrorMsg(null); setSuccessMsg(null); }}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer ${
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer shrink-0 w-auto lg:w-full ${
               activeTab === 'notifications' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-primary-text'
             }`}
           >
@@ -245,7 +259,7 @@ export const Settings: React.FC = () => {
 
           {/* TAB 1: PROFILE DETAILS */}
           {activeTab === 'profile' && (
-            <form onSubmit={handleUpdateProfile} className="space-y-6">
+            <form onSubmit={handleUpdateProfile} className="space-y-6 max-w-lg w-full">
               <h3 className="text-xl font-bold font-display text-primary-text mb-4 border-b border-gray-50 pb-2">Profile Information</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -256,7 +270,7 @@ export const Settings: React.FC = () => {
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-primary-text focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm"
+                    className="w-full h-11 px-4 border border-gray-300 rounded-xl text-base text-primary-text focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
                 
@@ -267,7 +281,7 @@ export const Settings: React.FC = () => {
                     required
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-primary-text focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm"
+                    className="w-full h-11 px-4 border border-gray-300 rounded-xl text-base text-primary-text focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
               </div>
@@ -278,7 +292,7 @@ export const Settings: React.FC = () => {
                   type="url"
                   value={avatarUrl}
                   onChange={(e) => setAvatarUrl(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl text-primary-text focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm"
+                  className="w-full h-11 px-4 border border-gray-300 rounded-xl text-base text-primary-text focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="https://example.com/photo.jpg"
                 />
               </div>
@@ -287,7 +301,7 @@ export const Settings: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex items-center bg-primary text-white font-semibold py-3 px-6 rounded-2xl hover:bg-indigo-800 disabled:opacity-50 transition-all cursor-pointer text-sm"
+                  className="w-full sm:w-auto h-11 flex items-center justify-center bg-primary text-white font-semibold px-6 rounded-2xl hover:bg-indigo-800 disabled:opacity-50 transition-all cursor-pointer text-sm"
                 >
                   {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                   Save Profile Details
@@ -298,7 +312,7 @@ export const Settings: React.FC = () => {
 
           {/* TAB 2: CHANGE PASSWORD */}
           {activeTab === 'password' && (
-            <form onSubmit={handleUpdatePassword} className="space-y-6">
+            <form onSubmit={handleUpdatePassword} className="space-y-6 max-w-lg w-full">
               <h3 className="text-xl font-bold font-display text-primary-text mb-4 border-b border-gray-50 pb-2">Change Password</h3>
 
               <div className="space-y-4 max-w-md">
@@ -309,7 +323,7 @@ export const Settings: React.FC = () => {
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-primary-text focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm"
+                    className="w-full h-11 px-4 border border-gray-300 rounded-xl text-base text-primary-text focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -320,7 +334,7 @@ export const Settings: React.FC = () => {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-primary-text focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm"
+                    className="w-full h-11 px-4 border border-gray-300 rounded-xl text-base text-primary-text focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
               </div>
@@ -329,7 +343,7 @@ export const Settings: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting || !newPassword}
-                  className="flex items-center bg-primary text-white font-semibold py-3 px-6 rounded-2xl hover:bg-indigo-800 disabled:opacity-50 transition-all cursor-pointer text-sm"
+                  className="w-full sm:w-auto h-11 flex items-center justify-center bg-primary text-white font-semibold px-6 rounded-2xl hover:bg-indigo-800 disabled:opacity-50 transition-all cursor-pointer text-sm"
                 >
                   {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                   Update Password
@@ -340,7 +354,7 @@ export const Settings: React.FC = () => {
 
           {/* TAB 3: NOTIFICATIONS LINK TELEGRAM */}
           {activeTab === 'notifications' && (
-            <div className="space-y-6">
+            <div className="space-y-6 max-w-lg w-full">
               <h3 className="text-xl font-bold font-display text-primary-text mb-4 border-b border-gray-50 pb-2">Notification Preferences</h3>
 
               {/* Email notifications preferences toggle */}
@@ -422,6 +436,13 @@ export const Settings: React.FC = () => {
                         <div className="text-3xl font-mono font-bold text-primary-text bg-indigo-50/50 px-5 py-2 rounded-lg border border-indigo-50 inline-block tracking-widest">
                           {tgCode}
                         </div>
+                        <button
+                          type="button"
+                          onClick={handleCopyCode}
+                          className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
+                        >
+                          {isCopied ? 'Copied ✓' : 'Copy Code'}
+                        </button>
                         <p className="text-xxs text-gray-400">
                           Expires at <strong>{tgExpiry}</strong>. Polling active...
                         </p>

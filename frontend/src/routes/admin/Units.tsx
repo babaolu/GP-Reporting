@@ -175,16 +175,17 @@ export const Units: React.FC = () => {
 
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center text-xs font-bold text-white bg-primary hover:bg-indigo-800 py-3 px-5 rounded-2xl transition-all shadow-md shadow-indigo-100 cursor-pointer"
+          className="fixed bottom-24 right-4 z-40 h-14 w-14 rounded-full shadow-lg bg-primary text-white flex items-center justify-center lg:static lg:h-auto lg:w-auto lg:rounded-2xl lg:shadow-md lg:shadow-indigo-100 lg:px-5 lg:py-3 hover:bg-indigo-800 transition-all cursor-pointer shrink-0"
         >
-          <Plus className="h-4 w-4 mr-1.5" /> Create New Department
+          <Plus className="h-6 w-6 lg:h-4 lg:w-4 lg:mr-1.5 shrink-0" />
+          <span className="hidden lg:inline">Create New Department</span>
         </button>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
+      <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm flex flex-col lg:flex-row lg:items-center gap-4">
         {/* Search */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative w-full">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
             <Search className="h-4 w-4" />
           </div>
@@ -193,17 +194,17 @@ export const Units: React.FC = () => {
             placeholder="Search by department name or coordinator..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-base text-primary-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
           />
         </div>
         
         {/* Filter status */}
-        <div className="flex items-center space-x-2 shrink-0">
+        <div className="flex items-center justify-between lg:justify-start space-x-2 w-full lg:w-auto shrink-0">
           <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Status: </label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="border border-gray-200 rounded-xl text-sm px-4 py-2.5 text-primary-text focus:outline-none focus:ring-2 focus:ring-primary"
+            className="border border-gray-200 rounded-xl text-base px-4 py-2.5 text-primary-text focus:outline-none focus:ring-2 focus:ring-primary w-full lg:w-auto"
           >
             <option value="all">All Departments</option>
             <option value="active">Active</option>
@@ -226,7 +227,7 @@ export const Units: React.FC = () => {
           <p className="text-xs text-gray-500 mt-1">Try clearing filters or search keywords.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredUnits.map((unit) => {
             const statusConfig = {
               active: 'bg-green-50 text-green-700 border-green-200',
@@ -244,14 +245,14 @@ export const Units: React.FC = () => {
               <div
                 key={unit.id}
                 onClick={() => navigate(`/admin/units/${unit.id}`)}
-                className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xxs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between h-52 hover:scale-98"
+                className="bg-white p-5 rounded-3xl border border-gray-100 shadow-xxs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[13rem] hover:scale-98"
               >
                 <div className="space-y-2">
-                  <div className="flex items-start justify-between">
-                    <h3 className="text-lg font-bold font-display text-primary-text leading-tight truncate max-w-[70%]">
+                  <div className="flex items-start justify-between gap-1.5">
+                    <h3 className="text-base sm:text-lg font-bold font-display text-primary-text leading-tight truncate max-w-[70%]">
                       {unit.name}
                     </h3>
-                    <span className={`text-xxs font-bold px-2 py-0.5 rounded-full border uppercase ${statusConfig[unit.status]}`}>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase shrink-0 ${statusConfig[unit.status]}`}>
                       {unit.status}
                     </span>
                   </div>
@@ -269,7 +270,7 @@ export const Units: React.FC = () => {
                   
                   <div className="flex items-center text-xs justify-between">
                     <span className="text-gray-400">Monthly Submission:</span>
-                    <span className={`font-semibold text-xxs flex items-center ${reportConfigs[unit.reportStatus].color}`}>
+                    <span className={`font-semibold text-xxs flex items-center shrink-0 ${reportConfigs[unit.reportStatus].color}`}>
                       {unit.status === 'frozen' ? (
                         <span className="flex items-center"><Snowflake className="h-3 w-3 mr-1" /> Awaiting Head</span>
                       ) : (
@@ -285,153 +286,154 @@ export const Units: React.FC = () => {
       )}
 
       {isOpen && (
-        <div className="fixed inset-0 overflow-hidden z-50 animate-fade-in">
+        <div className="fixed inset-0 overflow-hidden z-50 animate-fade-in flex flex-col justify-end lg:justify-start">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" onClick={handleCloseModal} />
           
-          <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
-            <div className="w-screen max-w-md bg-white flex flex-col h-full shadow-2xl border-l border-gray-100 animate-slide-in">
-              <div className="bg-indigo-950 p-6 text-white flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold font-display leading-tight">
-                    {successData ? 'Credentials Provisioned' : 'Create Department'}
-                  </h3>
-                  <p className="text-xs text-indigo-300 mt-1 font-sans">
-                    {successData ? 'Copy the temporary credentials below.' : 'Setup a new church unit and provision credentials.'}
+          <div className="relative w-full bg-white flex flex-col h-[90vh] rounded-t-3xl shadow-2xl border-t border-gray-250 animate-slide-up-bottom lg:h-full lg:w-screen lg:max-w-md lg:rounded-none lg:border-t-0 lg:border-l lg:border-gray-100 lg:animate-slide-in lg:self-end">
+            {/* Drag Handle Bar on Mobile */}
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-2.5 shrink-0 lg:hidden" />
+
+            <div className="bg-indigo-950 p-5 mt-2 lg:mt-0 text-white flex items-center justify-between shrink-0">
+              <div>
+                <h3 className="text-lg lg:text-xl font-bold font-display leading-tight">
+                  {successData ? 'Credentials Provisioned' : 'Create Department'}
+                </h3>
+                <p className="text-xs text-indigo-300 mt-1 font-sans">
+                  {successData ? 'Copy the temporary credentials below.' : 'Setup a new church unit and provision credentials.'}
+                </p>
+              </div>
+              <button
+                onClick={handleCloseModal}
+                className="text-indigo-200 hover:text-white p-2.5 rounded-full hover:bg-indigo-900/50 transition-all cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {successData ? (
+              <div className="flex-1 p-6 space-y-6 overflow-y-auto flex flex-col justify-between">
+                <div className="space-y-6">
+                  <div className="bg-green-50 border border-green-200 p-4 rounded-xl flex items-start space-x-3 text-xs text-green-700">
+                    <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600 mt-0.5" />
+                    <div>
+                      <strong className="block text-green-800 font-semibold mb-0.5">Creation Success!</strong>
+                      Department unit has been created and an authentication account was successfully provisioned.
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 space-y-4 font-sans text-xs">
+                    <div>
+                      <span className="text-gray-400 font-semibold block uppercase tracking-wider mb-1">Department</span>
+                      <strong className="text-primary-text text-sm">{successData.name}</strong>
+                    </div>
+                    
+                    <div>
+                      <span className="text-gray-400 font-semibold block uppercase tracking-wider mb-1">Username / Email</span>
+                      <strong className="text-primary-text text-sm">{successData.email}</strong>
+                    </div>
+
+                    <div>
+                      <span className="text-gray-400 font-semibold block uppercase tracking-wider mb-1">Temporary Password</span>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <code className="bg-indigo-50 border border-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg font-mono text-sm font-bold flex-1 select-all">
+                          {successData.tempPassword}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (successData.tempPassword) {
+                              navigator.clipboard.writeText(successData.tempPassword);
+                              alert('Temporary password copied to clipboard!');
+                            }
+                          }}
+                          className="bg-white hover:bg-gray-50 border border-gray-200 p-2.5 rounded-lg text-gray-500 hover:text-primary transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+                          title="Copy Password"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" className="h-4 w-4">
+                            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-xxs text-gray-400 leading-normal">
+                    Note: A welcome email containing these credentials was sent to the coordinator. The password must be reset upon their first login.
                   </p>
                 </div>
+
                 <button
                   onClick={handleCloseModal}
-                  className="text-indigo-200 hover:text-white p-2 rounded-full hover:bg-indigo-900/50 transition-all cursor-pointer"
+                  className="w-full py-3 bg-primary hover:bg-indigo-800 text-white font-semibold rounded-xl text-sm transition-all shadow-md cursor-pointer mt-8 min-h-[44px]"
                 >
-                  <X className="h-6 w-6" />
+                  Done
                 </button>
               </div>
-
-              {successData ? (
-                <div className="flex-1 p-6 space-y-6 overflow-y-auto flex flex-col justify-between">
-                  <div className="space-y-6">
-                    <div className="bg-green-50 border border-green-200 p-4 rounded-xl flex items-start space-x-3 text-xs text-green-700">
-                      <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600 mt-0.5" />
-                      <div>
-                        <strong className="block text-green-800 font-semibold mb-0.5">Creation Success!</strong>
-                        Department unit has been created and an authentication account was successfully provisioned.
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 space-y-4 font-sans text-xs">
-                      <div>
-                        <span className="text-gray-400 font-semibold block uppercase tracking-wider mb-1">Department</span>
-                        <strong className="text-primary-text text-sm">{successData.name}</strong>
-                      </div>
-                      
-                      <div>
-                        <span className="text-gray-400 font-semibold block uppercase tracking-wider mb-1">Username / Email</span>
-                        <strong className="text-primary-text text-sm">{successData.email}</strong>
-                      </div>
-
-                      <div>
-                        <span className="text-gray-400 font-semibold block uppercase tracking-wider mb-1">Temporary Password</span>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <code className="bg-indigo-50 border border-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg font-mono text-sm font-bold flex-1 select-all">
-                            {successData.tempPassword}
-                          </code>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (successData.tempPassword) {
-                                navigator.clipboard.writeText(successData.tempPassword);
-                                alert('Temporary password copied to clipboard!');
-                              }
-                            }}
-                            className="bg-white hover:bg-gray-50 border border-gray-200 p-2 rounded-lg text-gray-500 hover:text-primary transition-colors cursor-pointer"
-                            title="Copy Password"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" className="h-4 w-4">
-                              <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <p className="text-xxs text-gray-400 leading-normal">
-                      Note: A welcome email containing these credentials was sent to the coordinator. The password must be reset upon their first login.
-                    </p>
+            ) : (
+              <form onSubmit={handleCreateUnit} className="flex-1 p-6 space-y-6 overflow-y-auto">
+                {modalError && (
+                  <div className="bg-red-50 border border-red-200 p-4 rounded-xl flex items-start space-x-2.5 text-xs text-red-700">
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 mt-0.5" />
+                    <span>{modalError}</span>
                   </div>
+                )}
 
+                <div>
+                  <label className="block text-sm font-semibold text-primary-text mb-1">Department Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-primary min-h-[44px]"
+                    placeholder="E.g., Choir, Ushers, Youth"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-primary-text mb-1">Description</label>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-primary h-24"
+                    placeholder="Provide a brief description of the department's mandate..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-primary-text mb-1">Unit Head Email</label>
+                  <input
+                    type="email"
+                    required
+                    value={unitHeadEmail}
+                    onChange={(e) => setUnitHeadEmail(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-primary min-h-[44px]"
+                    placeholder="leader@graceplace.org"
+                  />
+                  <p className="text-xxs text-gray-400 mt-1.5 font-sans leading-relaxed">
+                    <strong>Note:</strong> Generating this department will atomically create a Supabase Auth user account with a temporary password and dispatch a welcome credentials email.
+                  </p>
+                </div>
+
+                <div className="border-t border-gray-100 pt-6 flex space-x-4">
                   <button
+                    type="button"
                     onClick={handleCloseModal}
-                    className="w-full py-3 bg-primary hover:bg-indigo-800 text-white font-semibold rounded-xl text-sm transition-all shadow-md cursor-pointer mt-8"
+                    className="flex-1 py-3 border border-gray-300 text-gray-500 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm cursor-pointer min-h-[44px]"
                   >
-                    Done
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isCreating}
+                    className="flex-1 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-indigo-800 transition-colors text-sm flex items-center justify-center cursor-pointer min-h-[44px]"
+                  >
+                    {isCreating && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
+                    Create Department
                   </button>
                 </div>
-              ) : (
-                <form onSubmit={handleCreateUnit} className="flex-1 p-6 space-y-6 overflow-y-auto">
-                  {modalError && (
-                    <div className="bg-red-50 border border-red-200 p-4 rounded-xl flex items-start space-x-2.5 text-xs text-red-700">
-                      <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 mt-0.5" />
-                      <span>{modalError}</span>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-semibold text-primary-text mb-1">Department Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                      placeholder="E.g., Choir, Ushers, Youth"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-primary-text mb-1">Description</label>
-                    <textarea
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary h-24"
-                      placeholder="Provide a brief description of the department's mandate..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-primary-text mb-1">Unit Head Email</label>
-                    <input
-                      type="email"
-                      required
-                      value={unitHeadEmail}
-                      onChange={(e) => setUnitHeadEmail(e.target.value)}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                      placeholder="leader@graceplace.org"
-                    />
-                    <p className="text-xxs text-gray-400 mt-1.5 font-sans leading-relaxed">
-                      <strong>Note:</strong> Generating this department will atomically create a Supabase Auth user account with a temporary password and dispatch a welcome credentials email.
-                    </p>
-                  </div>
-
-                  <div className="border-t border-gray-100 pt-6 flex space-x-4">
-                    <button
-                      type="button"
-                      onClick={handleCloseModal}
-                      className="flex-1 py-2.5 border border-gray-300 text-gray-500 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isCreating}
-                      className="flex-1 py-2.5 bg-primary text-white font-semibold rounded-xl hover:bg-indigo-800 transition-colors text-sm flex items-center justify-center cursor-pointer"
-                    >
-                      {isCreating && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
-                      Create Department
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
+              </form>
+            )}
           </div>
         </div>
       )}
