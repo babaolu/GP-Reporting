@@ -11,9 +11,33 @@ const appUrl = process.env.APP_URL || 'http://localhost:5173';
 let bot: TelegramBot | null = null;
 
 if (token && !token.startsWith('YOUR_')) {
-  // Initialize bot in webhook mode (polling disabled)
-  bot = new TelegramBot(token, { polling: false });
-  console.log(`Telegram Bot service initialized for @${botUsername} (webhook mode)`);
+  const isProduction = process.env.NODE_ENV === 'production';
+  const usePolling = process.env.TELEGRAM_USE_POLLING === 'true' || !isProduction;
+
+  if (usePolling) {
+    bot = new TelegramBot(token, { polling: true });
+    console.log(`Telegram Bot service initialized for @${botUsername} (polling mode)`);
+  } else {
+    bot = new TelegramBot(token, { polling: false });
+    console.log(`Telegram Bot service initialized for @${botUsername} (webhook mode)`);
+
+    // Auto-register webhook in webhook mode
+    const backendUrl = process.env.BACKEND_URL || process.env.APP_URL || 'http://localhost:3000';
+    let webhookBase = backendUrl;
+    if (webhookBase.includes('localhost:5173')) {
+      webhookBase = webhookBase.replace('5173', '3000');
+    }
+    const webhookUrl = `${webhookBase}/api/telegram/webhook`;
+    const secretToken = process.env.TELEGRAM_WEBHOOK_SECRET;
+
+    bot.setWebHook(webhookUrl, secretToken ? { secret_token: secretToken } : undefined)
+      .then(() => {
+        console.log(`Telegram Webhook registered successfully at: ${webhookUrl}`);
+      })
+      .catch(err => {
+        console.error(`Failed to register Telegram Webhook:`, err);
+      });
+  }
   
   // Register message handler
   bot.on('message', async (msg) => {
