@@ -49,6 +49,7 @@ export const Monthly: React.FC = () => {
 
   // General monthly AI summary status
   const [isRegeneratingSummary, setIsRegeneratingSummary] = useState(false);
+  const [isRetryingAI, setIsRetryingAI] = useState<string | null>(null);
 
   const loadMonthlyReports = async () => {
     setIsLoading(true);
@@ -119,6 +120,56 @@ export const Monthly: React.FC = () => {
   useEffect(() => {
     loadMonthlyReports();
   }, [selectedMonth]);
+
+  const handleRetryAISummary = async (reportId: string) => {
+    setIsRetryingAI(reportId);
+    
+    // Set local state to processing to show loader immediately
+    setReportsData(prev =>
+      prev.map(row => {
+        if (row.report && row.report.id === reportId) {
+          return {
+            ...row,
+            report: {
+              ...row.report,
+              ai_status: 'processing'
+            }
+          };
+        }
+        return row;
+      })
+    );
+
+    try {
+      await apiPost(`/reports/${reportId}/retry-summary`);
+      
+      // Reload reports after a few seconds to retrieve the new AI summary
+      setTimeout(async () => {
+        await loadMonthlyReports();
+        setIsRetryingAI(null);
+      }, 5000);
+    } catch (err: any) {
+      console.error('Failed to retry AI summary:', err);
+      alert(err.message || 'Failed to retry AI processing');
+      
+      // Reset back to failed on error
+      setReportsData(prev =>
+        prev.map(row => {
+          if (row.report && row.report.id === reportId) {
+            return {
+              ...row,
+              report: {
+                ...row.report,
+                ai_status: 'failed'
+              }
+            };
+          }
+          return row;
+        })
+      );
+      setIsRetryingAI(null);
+    }
+  };
 
   const toggleExpandRow = async (unitId: string, reportId: string | null) => {
     if (expandedUnitId === unitId) {
@@ -437,9 +488,19 @@ export const Monthly: React.FC = () => {
                                           <div className="h-10 bg-gray-200 rounded"></div>
                                         </div>
                                       ) : row.report.ai_status === 'failed' ? (
-                                        <div className="text-center py-4 text-xs text-amber-700 bg-amber-50 rounded-xl flex items-center justify-center space-x-2">
-                                          <AlertTriangle className="h-4 w-4" />
-                                          <span>AI processing failed. Insights unavailable.</span>
+                                        <div className="text-center py-4 px-4 text-xs text-amber-700 bg-amber-50 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-2">
+                                          <div className="flex items-center space-x-2">
+                                            <AlertTriangle className="h-4 w-4 shrink-0" />
+                                            <span>AI processing failed. Insights unavailable.</span>
+                                          </div>
+                                          <button
+                                            onClick={() => handleRetryAISummary(row.report.id)}
+                                            disabled={isRetryingAI === row.report.id}
+                                            className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-xxs transition-colors disabled:opacity-50 flex items-center cursor-pointer"
+                                          >
+                                            {isRetryingAI === row.report.id && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                                            Retry Processing
+                                          </button>
                                         </div>
                                       ) : row.report.ai_summary ? (
                                         <div className="space-y-3 text-xs leading-relaxed leading-normal font-sans">
