@@ -8,9 +8,10 @@ import { Loader2 } from 'lucide-react';
 
 interface ReportTimelineProps {
   unitId: string;
+  onSubmitForMonth?: (month: string) => void;
 }
 
-export const ReportTimeline: React.FC<ReportTimelineProps> = ({ unitId }) => {
+export const ReportTimeline: React.FC<ReportTimelineProps> = ({ unitId, onSubmitForMonth }) => {
   const [reports, setReports] = useState<any[]>([]);
   const [unitName, setUnitName] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
@@ -108,6 +109,7 @@ export const ReportTimeline: React.FC<ReportTimelineProps> = ({ unitId }) => {
       <div className="space-y-6 relative">
         {months.map((m) => {
           const { status, report } = getMonthStatusAndReport(m);
+          const isActionable = status === 'missing' && !!onSubmitForMonth;
           return (
             <div key={m} className="relative">
               <MonthNode
@@ -117,7 +119,14 @@ export const ReportTimeline: React.FC<ReportTimelineProps> = ({ unitId }) => {
                 version={report?.version}
                 unitName={unitName}
                 aiSummaryPreview={report?.ai_summary?.summary}
-                onClick={() => report && setActiveReportId(report.id)}
+                isActionable={isActionable}
+                onClick={() => {
+                  if (status === 'missing' && onSubmitForMonth) {
+                    onSubmitForMonth(m);
+                  } else if (report) {
+                    setActiveReportId(report.id);
+                  }
+                }}
               />
             </div>
           );

@@ -10,6 +10,7 @@ interface MonthNodeProps {
   onClick?: () => void;
   unitName?: string;
   aiSummaryPreview?: string;
+  isActionable?: boolean;
 }
 
 export const MonthNode: React.FC<MonthNodeProps> = ({
@@ -19,7 +20,8 @@ export const MonthNode: React.FC<MonthNodeProps> = ({
   version = 1,
   onClick,
   unitName,
-  aiSummaryPreview
+  aiSummaryPreview,
+  isActionable = false
 }) => {
   const label = formatMonthLabel(month);
 
@@ -46,7 +48,7 @@ export const MonthNode: React.FC<MonthNodeProps> = ({
       icon: X,
       badgeText: 'Missing',
       badgeStyle: 'bg-red-100 text-red-800 border-red-200',
-      cursor: 'cursor-default'
+      cursor: isActionable ? 'cursor-pointer' : 'cursor-default'
     },
     future: {
       bg: 'bg-gray-50 border-gray-200',
@@ -60,7 +62,7 @@ export const MonthNode: React.FC<MonthNodeProps> = ({
 
   const current = config[status];
   const IconComponent = current.icon;
-  const isClickable = status === 'on_time' || status === 'late';
+  const isClickable = status === 'on_time' || status === 'late' || (status === 'missing' && isActionable);
 
   return (
     <div className="relative flex items-center min-h-[44px]">
@@ -98,9 +100,17 @@ export const MonthNode: React.FC<MonthNodeProps> = ({
           )}
 
           {status === 'missing' && (
-            <p className="text-xs text-red-600 font-semibold">
-              No report submitted for this month.
-            </p>
+            <>
+              <p className="text-xs text-red-600 font-semibold">
+                No report submitted for this month.
+              </p>
+              {isActionable && (
+                <p className="text-xs text-red-500 font-semibold mt-1 flex items-center space-x-1">
+                  <span>→</span>
+                  <span>Tap to submit a late report</span>
+                </p>
+              )}
+            </>
           )}
 
           {submittedAt && (

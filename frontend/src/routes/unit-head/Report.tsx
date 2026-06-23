@@ -1,16 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
 import { apiPost } from '../../lib/api';
-import { getCurrentReportingMonth, formatMonthLabel } from '../../lib/date-helpers';
+import { getCurrentReportingMonth, formatMonthLabel, getPastMonthsList } from '../../lib/date-helpers';
 import useDeadline from '../../hooks/useDeadline';
 import MDEditor from '@uiw/react-md-editor';
 import { FileUp, FileText, Send, CheckCircle2, AlertTriangle, File, X, Info, Loader2 } from 'lucide-react';
 
 export const Report: React.FC = () => {
   const { user } = useAuth();
-  const currentMonthStr = getCurrentReportingMonth();
-  const { daysRemaining, deadline, isLoading: deadlineLoading } = useDeadline(currentMonthStr);
+  const [searchParams] = useSearchParams();
+  const monthFromQuery = searchParams.get('month');
+  const validMonths = getPastMonthsList(6);
+
+  const initialMonth = (monthFromQuery && validMonths.includes(monthFromQuery))
+    ? monthFromQuery
+    : getCurrentReportingMonth();
+
+  const [selectedMonth, setSelectedMonth] = useState(initialMonth);
+  const { daysRemaining, deadline, isLoading: deadlineLoading } = useDeadline(selectedMonth);
 
   const [activeTab, setActiveTab] = useState<'upload' | 'write'>('write');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,8 +40,8 @@ export const Report: React.FC = () => {
 
 
   // Generate Report Template
-  const generateTemplate = (uName: string) => {
-    const dateLabel = formatMonthLabel(currentMonthStr);
+  const generateTemplate = (uName: string, monthStr: string) => {
+    const dateLabel = formatMonthLabel(monthStr);
     return `## ${uName} Monthly Report — ${dateLabel}
 
 ### 1. Progress This Month
@@ -70,7 +79,7 @@ _Outline what the unit intends to focus on in the coming month._`;
         .from('reports')
         .select('*')
         .eq('unit_id', user.unit_id)
-        .eq('month', currentMonthStr)
+        .eq('month', selectedMonth)
         .eq('is_latest', true)
         .maybeSingle();
 
@@ -83,25 +92,40 @@ _Outline what the unit intends to focus on in the coming month._`;
           setActiveTab('upload');
         }
       } else {
-        setMarkdownContent(generateTemplate(unitData?.name || 'My Unit'));
+        setExistingReport(null);
+        setMarkdownContent(generateTemplate(unitData?.name || 'My Unit', selectedMonth));
       }
     } catch (err) {
       console.error('Failed to load unit/report data:', err);
-    } finally {
-      // Done loading
     }
   };
 
   useEffect(() => {
     loadUnitNameAndReport();
-  }, [user, currentMonthStr]);
+  }, [user, selectedMonth]);
+
+  // Handle Month Select Dropdown Change with Form Reset
+  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newMonth = e.target.value;
+
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    setMarkdownContent(generateTemplate(unitName, newMonth));
+    setSuccessMsg(null);
+    setErrorMsg(null);
+    setActiveTab('write');
+
+    setSelectedMonth(newMonth);
+  };
 
   // Handle Tab Switch (Mutual Exclusivity Enforced)
   const handleTabChange = (tab: 'upload' | 'write') => {
     if (tab === 'write') {
       setSelectedFile(null); // Clear file input
     } else {
-      setMarkdownContent(generateTemplate(unitName)); // Clear custom write changes/reset to template
+      setMarkdownContent(generateTemplate(unitName, selectedMonth)); // Clear custom write changes/reset to template
     }
     setActiveTab(tab);
     setErrorMsg(null);
@@ -171,7 +195,7 @@ _Outline what the unit intends to focus on in the coming month._`;
     try {
 
       let payload: any = {
-        month: currentMonthStr
+        month: selectedMonth
       };
 
       if (activeTab === 'write') {
@@ -191,7 +215,7 @@ _Outline what the unit intends to focus on in the coming month._`;
         const fileType = fileTypeMap[ext] || 'text';
 
         // 1. Upload file to Supabase Storage
-        const storagePath = `reports_${user?.unit_id}_${currentMonthStr}_${Date.now()}.${ext}`;
+        const storagePath = `reports_${user?.unit_id}_${selectedMonth}_${Date.now()}.${ext}`;
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('reports')
           .upload(storagePath, selectedFile, {
@@ -240,19 +264,41 @@ _Outline what the unit intends to focus on in the coming month._`;
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Page Header */}
-      <div className="bg-white p-6 lg:p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
+      <div className="bg-white p-6 lg:p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold font-display text-primary-text mb-1">
-            Submit {unitName} Monthly Report
+            Submit {unitName} Report — {formatMonthLabel(selectedMonth)}
           </h1>
-          <p className="text-sm text-gray-500 font-sans">
-            Reporting month: <span className="font-semibold text-primary">{formatMonthLabel(currentMonthStr)}</span>
-          </p>
         </div>
 
-        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl px-5 py-3 text-sm text-indigo-900 shrink-0 w-full lg:w-auto text-center lg:text-left">
-          <span className="font-bold">Deadline Date: </span>
-          {deadlineLoading ? 'Loading...' : deadline?.deadline_date ? new Date(deadline.deadline_date).toLocaleDateString() : 'N/A'}
+        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+          {/* Month Selector */}
+          <div className="flex flex-col">
+            <span className="text-xxs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+              Reporting Month
+            </span>
+            <select
+              value={selectedMonth}
+              onChange={handleMonthChange}
+              className="bg-indigo-50 border border-indigo-100 rounded-2xl px-5 py-3 text-sm text-indigo-900 shrink-0 w-full lg:w-auto focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer font-semibold"
+            >
+              {validMonths.map((m) => (
+                <option key={m} value={m}>
+                  {formatMonthLabel(m)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Deadline Date Display */}
+          <div className="flex flex-col">
+            <span className="text-xxs font-semibold text-gray-400 uppercase tracking-widest mb-1 sm:text-right">
+              Submission Deadline
+            </span>
+            <div className="bg-indigo-50 border border-indigo-100 rounded-2xl px-5 py-3 text-sm text-indigo-900 shrink-0 w-full lg:w-auto text-center lg:text-left font-semibold">
+              {deadlineLoading ? 'Loading...' : deadline?.deadline_date ? new Date(deadline.deadline_date).toLocaleDateString() : 'N/A'}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -266,6 +312,32 @@ _Outline what the unit intends to focus on in the coming month._`;
               {existingReport 
                 ? 'The deadline has passed. Submitting this revision will archive your original on-time submission and create a new version flagged as "Late".'
                 : 'The submission deadline has passed. This report will be flagged as "Late Submission" on the administrator dashboard.'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Submitting for a Previous Month and Late Warning Banner */}
+      {isLate && !existingReport && selectedMonth !== getCurrentReportingMonth() && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-start space-x-3 shadow-sm animate-fade-in">
+          <AlertTriangle className="h-6 w-6 text-warning-custom shrink-0 mt-0.5" />
+          <div>
+            <h4 className="text-base font-bold text-amber-900 font-display">Submitting for a Previous Month</h4>
+            <p className="text-sm text-amber-700 mt-1">
+              You are submitting a report for {formatMonthLabel(selectedMonth)}. Since the deadline for this month has passed, this report will be flagged as a Late Submission on the administrator dashboard.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Defensive past-month non-late info banner */}
+      {!isLate && selectedMonth !== getCurrentReportingMonth() && (
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 flex items-start space-x-3 shadow-sm animate-fade-in">
+          <Info className="h-6 w-6 text-primary shrink-0 mt-0.5" />
+          <div>
+            <h4 className="text-base font-bold text-blue-900 font-display">Submitting for a Previous Month</h4>
+            <p className="text-sm text-blue-700 mt-1">
+              You are submitting a report for {formatMonthLabel(selectedMonth)}.
             </p>
           </div>
         </div>

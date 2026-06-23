@@ -1,10 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import ReportTimeline from '../../components/timeline/ReportTimeline';
 import { History as HistoryIcon } from 'lucide-react';
 
 export const History: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -26,7 +28,10 @@ export const History: React.FC = () => {
       {/* Timeline Render Container */}
       {user?.unit_id ? (
         <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm">
-          <ReportTimeline unitId={user.unit_id} />
+          <ReportTimeline
+            unitId={user.unit_id}
+            onSubmitForMonth={(month) => navigate(`/unit-head/report?month=${month}`)}
+          />
         </div>
       ) : (
         <div className="bg-amber-50 border border-amber-200 p-6 rounded-2xl text-center text-amber-800">
