@@ -175,7 +175,7 @@ export const Units: React.FC = () => {
 
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-28 right-4 z-40 h-14 w-14 rounded-full shadow-lg bg-primary text-white flex items-center justify-center lg:static lg:h-auto lg:w-auto lg:rounded-2xl lg:shadow-md lg:shadow-indigo-100 lg:px-5 lg:py-3 hover:bg-indigo-800 transition-all cursor-pointer shrink-0"
+          className="fixed bottom-36 right-4 z-40 h-14 w-14 rounded-full shadow-lg bg-primary text-white flex items-center justify-center lg:static lg:h-auto lg:w-auto lg:rounded-2xl lg:shadow-md lg:shadow-indigo-100 lg:px-5 lg:py-3 hover:bg-indigo-800 transition-all cursor-pointer shrink-0"
         >
           <Plus className="h-6 w-6 lg:h-4 lg:w-4 lg:mr-1.5 shrink-0" />
           <span className="hidden lg:inline">Create New Department</span>

@@ -37,7 +37,7 @@ export const UnitHeadLayout: React.FC = () => {
       <UnitHeadSidebar />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 pb-28 lg:pb-0 overflow-y-auto">
+      <main className="flex-1 flex flex-col min-w-0 pb-36 lg:pb-0 overflow-y-auto">
         <div className="max-w-7xl w-full mx-auto p-4 lg:p-8">
           <Outlet />
         </div>
