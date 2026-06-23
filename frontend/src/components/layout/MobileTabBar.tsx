@@ -61,7 +61,7 @@ export const MobileTabBar: React.FC = () => {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 bg-indigo-950 text-indigo-200 border-t border-indigo-900 flex justify-around py-2 lg:hidden z-50 pb-safe shadow-lg">
+      <nav className="fixed bottom-0 left-0 right-0 bg-indigo-950 text-indigo-200 border-t border-indigo-900 flex py-2 lg:hidden z-50 pb-safe shadow-lg">
         {user.role === 'admin' ? (
           <>
             {adminTabs.map((tab) => (
@@ -70,7 +70,7 @@ export const MobileTabBar: React.FC = () => {
                 to={tab.path}
                 end={tab.end}
                 className={({ isActive }) =>
-                  `flex flex-col items-center space-y-1 py-1 px-2.5 rounded-xl text-xxs font-semibold transition-colors ${
+                  `flex-1 flex flex-col items-center space-y-1 py-1 px-1 rounded-xl text-xxs font-semibold transition-colors min-w-0 ${
                     isActive && !isMoreActive
                       ? 'text-white bg-indigo-900' 
                       : 'text-indigo-300 hover:text-white'
@@ -78,7 +78,7 @@ export const MobileTabBar: React.FC = () => {
                 }
               >
                 <tab.icon className="h-5 w-5 shrink-0" />
-                <span className="hidden min-[375px]:block">{tab.name}</span>
+                <span className="hidden min-[360px]:block truncate w-full text-center">{tab.name}</span>
               </NavLink>
             ))}
           </>
@@ -90,7 +90,7 @@ export const MobileTabBar: React.FC = () => {
                 to={tab.path}
                 end={tab.end}
                 className={({ isActive }) =>
-                  `flex flex-col items-center space-y-1 py-1 px-2.5 rounded-xl text-xxs font-semibold transition-colors ${
+                  `flex-1 flex flex-col items-center space-y-1 py-1 px-1 rounded-xl text-xxs font-semibold transition-colors min-w-0 ${
                     isActive && !isMoreActive
                       ? 'text-white bg-indigo-900' 
                       : 'text-indigo-300 hover:text-white'
@@ -98,7 +98,7 @@ export const MobileTabBar: React.FC = () => {
                 }
               >
                 <tab.icon className="h-5 w-5 shrink-0" />
-                <span className="hidden min-[375px]:block">{tab.name}</span>
+                <span className="hidden min-[360px]:block truncate w-full text-center">{tab.name}</span>
               </NavLink>
             ))}
           </>
@@ -106,14 +106,14 @@ export const MobileTabBar: React.FC = () => {
 
         <button
           onClick={() => setIsMoreOpen(true)}
-          className={`flex flex-col items-center space-y-1 py-1 px-2.5 rounded-xl text-xxs font-semibold transition-colors cursor-pointer ${
+          className={`flex-1 flex flex-col items-center space-y-1 py-1 px-1 rounded-xl text-xxs font-semibold transition-colors cursor-pointer min-w-0 ${
             isMoreActive || isMoreOpen
               ? 'text-white bg-indigo-900'
               : 'text-indigo-300 hover:text-white'
           }`}
         >
           <MoreHorizontal className="h-5 w-5 shrink-0" />
-          <span className="hidden min-[375px]:block">More</span>
+          <span className="hidden min-[360px]:block truncate w-full text-center">More</span>
         </button>
       </nav>
 
