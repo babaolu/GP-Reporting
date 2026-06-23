@@ -286,7 +286,7 @@ export const Units: React.FC = () => {
       )}
 
       {isOpen && (
-        <div className="fixed inset-0 overflow-hidden z-50 animate-fade-in flex flex-col justify-end lg:justify-start">
+        <div className="fixed inset-0 overflow-hidden z-[60] animate-fade-in flex flex-col justify-end lg:justify-start">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" onClick={handleCloseModal} />
           
           <div className="relative w-full bg-white flex flex-col h-[90vh] rounded-t-3xl shadow-2xl border-t border-gray-250 animate-slide-up-bottom lg:h-full lg:w-screen lg:max-w-md lg:rounded-none lg:border-t-0 lg:border-l lg:border-gray-100 lg:animate-slide-in lg:self-end">
