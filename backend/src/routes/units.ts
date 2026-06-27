@@ -3,7 +3,8 @@ import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { supabaseAdmin } from '../services/supabase';
 import { generateTemporaryPassword } from '../lib/password-generator';
-import { sendWelcomeEmail } from '../services/email';
+import { sendWelcomeEmail, sendUnitRenameEmail } from '../services/email';
+import { sendUnitRenameTelegram } from '../services/telegram';
 
 const router = Router();
 
@@ -177,6 +178,18 @@ router.patch('/:id', async (req: AuthenticatedRequest, res: Response) => {
   const unitId = req.params.id;
 
   try {
+    const { data: existingUnit, error: fetchError } = await supabaseAdmin
+      .from('units')
+      .select('name')
+      .eq('id', unitId)
+      .single();
+
+    if (fetchError || !existingUnit) {
+      return res.status(404).json({ error: 'Unit not found' });
+    }
+
+    const oldName = existingUnit.name;
+
     const { data: updatedUnit, error } = await supabaseAdmin
       .from('units')
       .update({ name, description })
@@ -189,7 +202,52 @@ router.patch('/:id', async (req: AuthenticatedRequest, res: Response) => {
       return res.status(500).json({ error: 'Failed to update unit' });
     }
 
-    return res.status(200).json(updatedUnit);
+    const nameChanged = name && name.trim() !== oldName.trim();
+
+    let headProfile = null;
+    if (nameChanged) {
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('email, full_name, telegram_chat_id, telegram_linked')
+        .eq('unit_id', unitId)
+        .eq('role', 'unit_head')
+        .maybeSingle();
+      headProfile = profile;
+    }
+
+    // Return the updated unit to the admin immediately
+    res.status(200).json(updatedUnit);
+
+    // Fire-and-forget notifications if name changed and unit head exists
+    if (nameChanged && headProfile) {
+      const newName = updatedUnit.name;
+
+      // Email notification (always attempt)
+      sendUnitRenameEmail(
+        headProfile.email,
+        headProfile.full_name || 'Unit Head',
+        oldName,
+        newName
+      ).then(sent => {
+        console.log(`Unit rename email to ${headProfile.email}: ${sent ? 'sent' : 'failed'}`);
+      }).catch(err => {
+        console.error('Unexpected error in unit rename email:', err);
+      });
+
+      // Telegram notification (only if linked)
+      if (headProfile.telegram_linked && headProfile.telegram_chat_id) {
+        sendUnitRenameTelegram(
+          headProfile.telegram_chat_id,
+          headProfile.full_name || 'Unit Head',
+          oldName,
+          newName
+        ).then(sent => {
+          console.log(`Unit rename Telegram to chat ${headProfile.telegram_chat_id}: ${sent ? 'sent' : 'failed'}`);
+        }).catch(err => {
+          console.error('Unexpected error in unit rename Telegram:', err);
+        });
+      }
+    }
   } catch (err) {
     console.error('Unexpected unit update error:', err);
     return res.status(500).json({ error: 'Internal Server Error' });

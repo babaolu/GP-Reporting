@@ -152,3 +152,23 @@ export async function sendTelegramReminder(
   const message = `⏰ *Report Reminder [${sequenceNum}/3]*\n\nHi ${fullName || 'Unit Head'}, your monthly report for *${unitName}* is due in *${daysRemaining} day(s)* (by ${deadlineDateStr}).\n\n👉 [Submit here: ${appUrl}/dashboard/unit-head/report]\n\nIf you've already submitted, ignore this. 🙏`;
   return sendTelegramMessage(chatId, message);
 }
+
+/**
+ * Sends unit rename notification message to unit head via Telegram
+ */
+export async function sendUnitRenameTelegram(
+  chatId: string,
+  fullName: string,
+  oldUnitName: string,
+  newUnitName: string
+): Promise<boolean> {
+  const message = `📋 *Department Name Update*
+
+Hi ${fullName || 'Unit Head'}, your department has been renamed by the administration.
+
+*Previous Name:* ${oldUnitName}
+*New Name:* ${newUnitName}
+
+All your submitted reports and history remain intact. 🙏`;
+  return sendTelegramMessage(chatId, message);
+}

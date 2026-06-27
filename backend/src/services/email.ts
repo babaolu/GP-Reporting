@@ -119,3 +119,60 @@ export async function sendReminderEmail(
     return false;
   }
 }
+
+/**
+ * Sends unit rename notification email to unit head
+ */
+export async function sendUnitRenameEmail(
+  toEmail: string,
+  fullName: string,
+  oldUnitName: string,
+  newUnitName: string
+): Promise<boolean> {
+  const subject = `📋 Department Update: Your Unit Has Been Renamed — ${newUnitName}`;
+
+  const htmlContent = `
+    <div style="font-family: 'Inter', sans-serif; color: #1E1B4B; max-width: 600px; margin: 0 auto; border: 1px solid #E5E7EB; padding: 24px; border-radius: 8px; background-color: #FFFFFF;">
+      <p>Hi ${fullName || 'Unit Head'},</p>
+      
+      <p>Your department has been renamed from <strong>${oldUnitName}</strong> to <strong>${newUnitName}</strong> by the church administration.</p>
+      
+      <p>All your submitted reports, AI summaries, and submission history remain fully intact under the new name.</p>
+      
+      <div style="margin: 24px 0;">
+        <a href="${appUrl}" style="background-color: #3730A3; color: #FFFFFF; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">View My Dashboard</a>
+      </div>
+      
+      <p style="margin-top: 32px; border-top: 1px solid #F3F4F6; padding-top: 16px;">
+        Grace & Peace,<br/>
+        <strong>${churchName} Administration</strong>
+      </p>
+    </div>
+  `;
+
+  if (!resend) {
+    console.log(
+      `[MOCK EMAIL] Sent Unit Rename Notification to ${toEmail}.
+       Old name: ${oldUnitName} → New name: ${newUnitName}`
+    );
+    return true;
+  }
+
+  try {
+    const response = await resend.emails.send({
+      from: fromEmail,
+      to: toEmail,
+      subject: subject,
+      html: htmlContent
+    });
+
+    if (response.error) {
+      console.error('Failed to send unit rename email via Resend:', response.error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Unexpected error sending unit rename email:', err);
+    return false;
+  }
+}
