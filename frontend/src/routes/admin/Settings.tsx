@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { apiPost } from '../../lib/api';
 import { getPastMonthsList, formatMonthLabel } from '../../lib/date-helpers';
 import useDeadline from '../../hooks/useDeadline';
+import { getChurchName, setChurchName as persistChurchName } from '../../lib/church-name';
 import { 
   Settings as SettingsIcon, 
   Calendar, 
@@ -29,7 +30,7 @@ export const Settings: React.FC = () => {
   const { deadline, isLocked, isLoading: loadingDeadline, refetch } = useDeadline(selectedMonth);
 
   const [deadlineDate, setDeadlineDate] = useState('');
-  const [churchName, setChurchName] = useState(import.meta.env.VITE_CHURCH_NAME || 'Grace Place');
+  const [churchName, setChurchNameState] = useState<string>(getChurchName);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -72,16 +73,13 @@ export const Settings: React.FC = () => {
     setIsSubmitting(true);
     setErrorMsg(null);
     setSuccessMsg(null);
-    
+
     try {
-      // Typically church settings are saved in a configs table or system metadata.
-      // In this setup, we simulate saving it and alert success.
-      setTimeout(() => {
-        setSuccessMsg('Church Name settings updated successfully. (Note: Server configuration updated)');
-        setIsSubmitting(false);
-      }, 1000);
+      persistChurchName(churchName.trim());
+      setSuccessMsg(`Church name updated to "${churchName.trim()}". Changes are reflected immediately across the platform.`);
     } catch (err: any) {
-      setErrorMsg('Failed to update church name.');
+      setErrorMsg('Failed to save church name. Please try again.');
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -214,7 +212,7 @@ export const Settings: React.FC = () => {
                   type="text"
                   required
                   value={churchName}
-                  onChange={(e) => setChurchName(e.target.value)}
+                  onChange={(e) => setChurchNameState(e.target.value)}
                   className="w-full h-11 border border-gray-300 rounded-xl px-3 text-base text-primary-text focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
@@ -222,7 +220,7 @@ export const Settings: React.FC = () => {
               <div className="pt-2 flex justify-end">
                 <button
                   type="submit"
-                  disabled={isSubmitting || churchName === (import.meta.env.VITE_CHURCH_NAME || 'Grace Place')}
+                  disabled={isSubmitting || !churchName.trim() || churchName.trim() === getChurchName()}
                   className="w-full sm:w-auto h-11 px-5 bg-primary text-white font-semibold text-xs rounded-xl hover:bg-indigo-800 disabled:opacity-50 transition-colors cursor-pointer flex items-center justify-center"
                 >
                   Save Settings

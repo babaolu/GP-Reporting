@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useLogout } from '../../hooks/useLogout';
+import { useChurchName } from '../../hooks/useChurchName';
 import { 
   LayoutDashboard, 
   FileInput, 
@@ -14,7 +15,7 @@ import {
 export const UnitHeadSidebar: React.FC = () => {
   const { user } = useAuth();
   const { logout, isLoggingOut } = useLogout();
-  const churchName = import.meta.env.VITE_CHURCH_NAME || 'Grace Place';
+  const churchName = useChurchName();
 
   const menuItems = [
     { name: 'Overview', path: '/unit-head', icon: LayoutDashboard, end: true },

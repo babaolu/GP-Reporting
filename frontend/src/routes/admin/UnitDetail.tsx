@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { apiGet, apiPost } from '../../lib/api';
+import { apiGet, apiPost, apiPatch } from '../../lib/api';
 import ReportTimeline from '../../components/timeline/ReportTimeline';
 import { 
   ArrowLeft, 
@@ -12,7 +12,8 @@ import {
   Trash2,
   Loader2,
   TrendingUp,
-  X
+  X,
+  Pencil
 } from 'lucide-react';
 
 interface UnitDetailsData {
@@ -53,6 +54,41 @@ export const UnitDetail: React.FC = () => {
 
   const [showDeactivate, setShowDeactivate] = useState(false);
   const [isDeactivating, setIsDeactivating] = useState(false);
+
+  // Rename unit states
+  const [showRename, setShowRename]           = useState(false);
+  const [renameData, setRenameData]           = useState({ name: '', description: '' });
+  const [isRenaming, setIsRenaming]           = useState(false);
+  const [renameError, setRenameError]         = useState<string | null>(null);
+  const [renameSuccess, setRenameSuccess]     = useState(false);
+
+  const handleCloseRename = () => {
+    setShowRename(false);
+    setRenameError(null);
+    setRenameSuccess(false);
+  };
+
+  const handleRenameUnit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!renameData.name.trim() || !id) return;
+
+    setIsRenaming(true);
+    setRenameError(null);
+    setRenameSuccess(false);
+
+    try {
+      await apiPatch(`/units/${id}`, {
+        name: renameData.name.trim(),
+        description: renameData.description.trim() || null
+      });
+      setRenameSuccess(true);
+      await fetchUnitDetails();   // refresh so the page header shows the new name
+    } catch (err: any) {
+      setRenameError(err.message || 'Failed to rename unit.');
+    } finally {
+      setIsRenaming(false);
+    }
+  };
 
   // Trend analysis states
   const [trendData, setTrendData] = useState<any | null>(null);
@@ -187,6 +223,17 @@ export const UnitDetail: React.FC = () => {
               className="w-full lg:w-auto px-4 py-3 bg-indigo-50 border border-indigo-200 text-primary hover:bg-indigo-100 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center min-h-[44px]"
             >
               <UserMinus className="h-4 w-4 mr-1.5 shrink-0" /> Change Unit Head
+            </button>
+            <button
+              onClick={() => {
+                setRenameData({ name: unit.name, description: unit.description || '' });
+                setRenameError(null);
+                setRenameSuccess(false);
+                setShowRename(true);
+              }}
+              className="w-full lg:w-auto px-4 py-3 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center min-h-[44px]"
+            >
+              <Pencil className="h-4 w-4 mr-1.5 shrink-0" /> Rename Unit
             </button>
             {unit.status !== 'deactivated' && (
               <button
@@ -463,6 +510,108 @@ export const UnitDetail: React.FC = () => {
                   >
                     {isUpdatingHead && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
                     Confirm Change
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* RENAME DEPARTMENT MODAL */}
+      {showRename && (
+        <div className="fixed inset-0 overflow-hidden z-50 animate-fade-in flex flex-col justify-end lg:justify-start">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" onClick={handleCloseRename} />
+          
+          <div className="relative w-full bg-white flex flex-col h-[90vh] rounded-t-3xl shadow-2xl border-t border-gray-250 animate-slide-up-bottom lg:h-full lg:w-screen lg:max-w-md lg:rounded-none lg:border-t-0 lg:border-l lg:border-gray-100 lg:animate-slide-in lg:self-end">
+            {/* Drag Handle Bar on Mobile */}
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-2.5 shrink-0 lg:hidden" />
+
+            <div className="bg-indigo-950 p-5 mt-2 lg:mt-0 text-white flex items-center justify-between shrink-0">
+              <div>
+                <h3 className="text-lg lg:text-xl font-bold font-display leading-tight">
+                  {renameSuccess ? 'Department Renamed' : 'Rename Department'}
+                </h3>
+                <p className="text-xs text-indigo-300 mt-1 font-sans">
+                  {renameSuccess ? 'Changes have been saved successfully.' : 'Update the department name and description.'}
+                </p>
+              </div>
+              <button 
+                onClick={handleCloseRename} 
+                className="text-indigo-200 hover:text-white p-2.5 rounded-full hover:bg-indigo-900/50 transition-all cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {renameSuccess ? (
+              <div className="flex-1 p-6 space-y-6 overflow-y-auto flex flex-col justify-between">
+                <div className="space-y-6">
+                  <div className="bg-green-50 border border-green-200 p-4 rounded-xl flex items-start space-x-3 text-xs text-green-700">
+                    <CheckCircle className="h-5 w-5 shrink-0 text-green-600 mt-0.5" />
+                    <div>
+                      The department has been renamed to '{renameData.name}'. All report history and coordinator data are fully preserved.
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleCloseRename}
+                  className="w-full py-3 bg-primary hover:bg-indigo-800 text-white font-semibold rounded-xl text-sm transition-all shadow-md cursor-pointer mt-8 min-h-[44px]"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleRenameUnit} className="flex-1 p-6 space-y-6 overflow-y-auto">
+                {renameError && (
+                  <div className="bg-red-50 border border-red-200 p-4 rounded-xl flex items-start space-x-2.5 text-xs text-red-700">
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 mt-0.5" />
+                    <span>{renameError}</span>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-semibold text-primary-text mb-1">
+                    Department Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={renameData.name}
+                    onChange={(e) => setRenameData(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-primary min-h-[44px]"
+                    placeholder="E.g., Choir, Ushers, Youth"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-primary-text mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    value={renameData.description}
+                    onChange={(e) => setRenameData(prev => ({ ...prev, description: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-primary h-24"
+                    placeholder="Brief description of the department's mandate..."
+                  />
+                </div>
+
+                <div className="border-t border-gray-100 pt-6 flex space-x-4">
+                  <button 
+                    type="button" 
+                    onClick={handleCloseRename}
+                    className="flex-1 py-3 border border-gray-300 text-gray-500 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm cursor-pointer min-h-[44px]"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={isRenaming || !renameData.name.trim()}
+                    className="flex-1 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-indigo-800 transition-colors text-sm flex items-center justify-center cursor-pointer min-h-[44px] disabled:opacity-50"
+                  >
+                    {isRenaming && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
+                    Save Changes
                   </button>
                 </div>
               </form>

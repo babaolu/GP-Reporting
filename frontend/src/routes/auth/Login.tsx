@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
+import { useChurchName } from '../../hooks/useChurchName';
 import { ShieldAlert, LogIn, Loader2, Eye, EyeOff } from 'lucide-react';
 
 export const Login: React.FC = () => {
@@ -13,7 +14,7 @@ export const Login: React.FC = () => {
   
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
-  const churchName = import.meta.env.VITE_CHURCH_NAME || 'Grace Place';
+  const churchName = useChurchName();
 
   // Redirect if already logged in
   useEffect(() => {
